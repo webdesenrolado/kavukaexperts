@@ -404,7 +404,7 @@ function Stat({
   label: string;
   value: string | number;
   sub: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
   color: string;
   big?: boolean;
 }) {

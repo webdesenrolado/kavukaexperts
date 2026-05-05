@@ -17,7 +17,7 @@ export interface MapPoint {
 interface MapViewProps {
   points: MapPoint[];
   height?: number;
-  drawLinesFromKind?: "company" | "job"; // se passar, desenha linhas tracejadas dos candidatos até esse ponto
+  drawLinesFromKind?: MapPoint["kind"]; // se passar, desenha linhas tracejadas dos outros pontos até esse
   className?: string;
 }
 

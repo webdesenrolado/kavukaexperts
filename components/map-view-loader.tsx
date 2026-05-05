@@ -18,7 +18,7 @@ const MapView = dynamic(() => import("./map-view").then((m) => m.MapView), {
 interface Props {
   points: MapPoint[];
   height?: number;
-  drawLinesFromKind?: "company" | "job";
+  drawLinesFromKind?: MapPoint["kind"];
   className?: string;
 }
 
