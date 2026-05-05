@@ -36,7 +36,7 @@ async function fetchOpenJobs(): Promise<PublicJob[]> {
     })
     .from(jobs)
     .leftJoin(companies, eq(jobs.companyId, companies.id))
-    .where(sql`${jobs.publiclyOpen} = 1 AND ${jobs.status} = 'open'`)
+    .where(sql`${jobs.publiclyOpen} = true AND ${jobs.status} = 'open'`)
     .orderBy(desc(jobs.publishedAt));
 }
 
