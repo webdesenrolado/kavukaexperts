@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   Inbox,
+  KanbanSquare,
 } from "lucide-react";
 
 interface NavItem {
@@ -25,6 +26,7 @@ const NAV: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: Inbox },
   { href: "/vagas", label: "Vagas", icon: Briefcase },
+  { href: "/kanban", label: "Kanban", icon: KanbanSquare },
   { href: "/candidatos", label: "Candidatos", icon: Users },
   { href: "/avaliacoes", label: "Avaliações", icon: ClipboardList },
   { href: "/score-humano", label: "Score Humano", icon: BrainCircuit },
