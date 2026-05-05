@@ -1,0 +1,27 @@
+{
+  "name": "@kavuka-experts/ipip-neo-120",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IPIP-NEO-120 assessment microservice (5 Big Five domains + 30 facets) — Kavuka Experts canonical contract.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./items": "./src/items.ts",
+    "./scoring": "./src/scoring.ts",
+    "./interpretation": "./src/interpretation.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^4.3.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "typescript": "^5"
+  }
+}

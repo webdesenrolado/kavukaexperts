@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Kavuka Experts — Apresentação Comercial</title>
+<style>
+:root {
+  --orange: #ff6a00;
+  --yellow: #ffcc00;
+  --dark: #0a0a0b;
+  --darker: #07070a;
+  --near-dark: #131319;
+  --light: #fafaf9;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --border-dark: #27272a;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --light-text: #f5f5f4;
+  --muted-dark: #9ca3af;
+  --green: #10b981;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--darker);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.deck {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  padding: 48px 64px;
+  flex-direction: column;
+  overflow: auto;
+}
+.slide.active { display: flex; }
+
+.slide.dark { background: var(--dark); color: var(--light-text); }
+.slide.light { background: var(--light); color: var(--text); }
+
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: auto;
+}
+.brand-logo {
+  position: relative;
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--orange), var(--yellow));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 22px; color: var(--dark);
+}
+.brand-logo::after {
+  content: "ID";
+  position: absolute; bottom: -4px; right: -4px;
+  background: var(--dark); color: #fff;
+  font-size: 8px; font-weight: 700;
+  padding: 2px 4px; border-radius: 3px;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.brand-name { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.brand-tag {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 2.5px;
+  opacity: 0.6; margin-top: 2px;
+}
+
+h1 { font-size: 56px; font-weight: 900; line-height: 1.05; letter-spacing: -1px; }
+h2 { font-size: 36px; font-weight: 800; line-height: 1.1; }
+h3 { font-size: 22px; font-weight: 700; }
+.lead { font-size: 18px; opacity: 0.7; max-width: 760px; line-height: 1.5; margin-top: 12px; }
+
+.dark h1, .dark h2, .dark h3 { color: var(--light-text); }
+.dark .lead { color: var(--muted-dark); }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 12px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+  background: rgba(255,106,0,0.15); color: var(--orange);
+  border: 1px solid rgba(255,106,0,0.3);
+  margin-bottom: 16px;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--orange), var(--yellow));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+
+.body-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.body-content.top { justify-content: flex-start; padding-top: 8px; }
+
+.cards {
+  display: grid; gap: 16px;
+  margin-top: 24px;
+}
+.cards.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.cards.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cards.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--orange);
+  border-top-left-radius: 16px; border-top-right-radius: 16px;
+}
+.card .num {
+  font-size: 32px; font-weight: 900; color: var(--orange);
+  line-height: 1; margin-bottom: 12px;
+}
+.card .card-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.card .card-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.dark .card {
+  background: var(--near-dark);
+  border-color: var(--border-dark);
+}
+.dark .card .card-sub { color: var(--muted-dark); }
+
+.card-featured {
+  background: var(--dark) !important;
+  border: 2px solid var(--orange) !important;
+  color: var(--light-text);
+}
+.card-featured .card-title { color: var(--yellow) !important; }
+.card-featured .card-sub { color: var(--light-text) !important; opacity: 0.85; }
+.card-featured .num { font-size: 56px; color: var(--orange) !important; }
+
+.row-list { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
+.row {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--orange);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.dark .row { background: var(--near-dark); border-color: var(--border-dark); border-left-color: var(--orange); }
+.row .row-icon { font-size: 24px; flex-shrink: 0; width: 36px; text-align: center; }
+.row .row-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--orange); color: var(--dark);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; flex-shrink: 0;
+}
+.row .row-text { flex: 1; }
+.row .row-title { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.row .row-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.dark .row .row-sub { color: var(--muted-dark); }
+
+.row .row-tag {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  background: var(--green); color: #fff;
+}
+
+.layers { display: flex; flex-direction: column; gap: 6px; margin-top: 24px; }
+.layer {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.layer .layer-num {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; color: #fff;
+  flex-shrink: 0;
+}
+.layer .layer-camada { font-weight: 700; font-size: 14px; flex-basis: 280px; flex-shrink: 0; }
+.layer .layer-instr { font-size: 13px; color: var(--muted); padding: 0 16px 0 0; }
+
+.steps {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 4px; margin-top: 36px;
+  position: relative;
+}
+.step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.step .step-circle {
+  width: 78px; height: 78px; border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 28px; color: var(--orange);
+  position: relative; z-index: 2;
+}
+.step.last .step-circle {
+  background: var(--orange); color: #fff; border-color: var(--orange);
+  box-shadow: 0 0 0 6px rgba(255,106,0,0.15);
+}
+.step .step-label { font-size: 11px; margin-top: 12px; color: var(--text); max-width: 110px; line-height: 1.3; }
+.step.last .step-label { font-weight: 700; }
+.step + .step::before {
+  content: ""; position: absolute; top: 39px;
+  height: 2px; background: var(--border);
+  width: calc(100% / 8 - 50px); /* approx */
+  z-index: 1;
+}
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+.box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.box.featured-orange {
+  background: var(--dark);
+  border: 2px solid var(--orange);
+  color: var(--light-text);
+}
+.box .box-eyebrow {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.box.featured-orange .box-eyebrow { color: var(--orange); }
+.box .box-headline { font-size: 18px; font-weight: 700; margin-bottom: 16px; line-height: 1.3; }
+.box.featured-orange .box-headline { color: var(--light-text); }
+.box ul { list-style: none; }
+.box ul li {
+  font-size: 13px; padding: 4px 0;
+  position: relative; padding-left: 16px;
+}
+.box ul li::before {
+  content: "·"; position: absolute; left: 4px; top: 4px;
+  color: var(--orange); font-weight: 900; font-size: 14px;
+}
+.box.featured-orange ul li { color: var(--light-text); }
+.box.featured-orange ul li::before { color: var(--yellow); }
+
+.tagline {
+  font-size: 22px; font-style: italic; color: var(--orange);
+  text-align: center; margin-top: auto; padding-top: 24px;
+  font-weight: 700;
+}
+
+.closing-quote {
+  margin-top: 24px;
+  padding: 18px 24px;
+  background: var(--near-dark);
+  border: 1.5px solid var(--orange);
+  border-radius: 12px;
+  text-align: center;
+}
+.closing-quote .q1 { color: var(--muted-dark); font-size: 16px; font-style: italic; }
+.closing-quote .q2 { color: var(--orange); font-size: 16px; font-style: italic; font-weight: 700; }
+
+.glow-orange {
+  position: absolute; pointer-events: none;
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(255,106,0,0.18), transparent 60%);
+  filter: blur(20px);
+}
+.glow-yellow {
+  position: absolute; pointer-events: none;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255,204,0,0.12), transparent 60%);
+  filter: blur(20px);
+}
+
+/* Page nav */
+.controls {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px 14px; border-radius: 999px;
+  z-index: 100;
+}
+.controls button {
+  background: transparent; border: none; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 50%;
+  color: rgba(255,255,255,0.7); font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.controls button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.controls button:disabled { opacity: 0.3; cursor: not-allowed; }
+.controls .indicator {
+  font-size: 11px; color: rgba(255,255,255,0.7);
+  font-family: ui-monospace, monospace; min-width: 60px; text-align: center;
+}
+
+.page-num {
+  position: absolute; bottom: 24px; right: 32px;
+  font-size: 11px; color: var(--muted);
+  font-family: ui-monospace, monospace;
+}
+.dark .page-num { color: var(--muted-dark); }
+
+@media (max-width: 1024px) {
+  .slide { padding: 24px 28px; }
+  h1 { font-size: 42px; }
+  h2 { font-size: 28px; }
+  .cards.cols-3, .cards.cols-4 { grid-template-columns: repeat(2, 1fr); }
+  .split { grid-template-columns: 1fr; }
+  .steps { flex-wrap: wrap; gap: 12px; }
+  .step + .step::before { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- SLIDE 1 - CAPA -->
+<section class="slide active dark" data-slide="1">
+  <div class="glow-orange" style="top:-200px;left:-200px"></div>
+  <div class="glow-yellow" style="bottom:-200px;right:-100px"></div>
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content">
+    <h1 style="margin-bottom: 12px">Kavuka <span class="gradient-text">Experts</span></h1>
+    <p style="font-size: 28px; color: var(--orange); margin-top: 12px;">A primeira plataforma KYID do RH brasileiro</p>
+    <div style="height: 4px; width: 120px; background: var(--orange); margin-top: 24px;"></div>
+  </div>
+  <p style="color: var(--muted-dark); font-style: italic; margin-top: 24px;">Como o KYC é para bancos, a KYID é para você.</p>
+  <div class="page-num">01 / 14</div>
+</section>
+
+<!-- SLIDE 2 - PROBLEMA -->
+<section class="slide light" data-slide="2">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>O RH hoje funciona em modo 1990</h2>
+    <p class="lead">Quatro problemas estruturais que custam contratações ruins, turnover e marca empregadora fraca.</p>
+    <div class="cards cols-4">
+      <div class="card">
+        <div class="num">01</div>
+        <div class="card-title">Currículo é teatro</div>
+        <div class="card-sub">de palavras-chave que não falam nada sobre quem a pessoa é.</div>
+      </div>
+      <div class="card">
+        <div class="num">02</div>
+        <div class="card-title">Decisão é intuição</div>
+        <div class="card-sub">viés inconsciente, alto turnover, custo absurdo.</div>
+      </div>
+      <div class="card">
+        <div class="num">03</div>
+        <div class="card-title">Candidato é número</div>
+        <div class="card-sub">disengagement, marca empregadora ruim, abandono.</div>
+      </div>
+      <div class="card">
+        <div class="num">04</div>
+        <div class="card-title">Avaliação fica retida</div>
+        <div class="card-sub">candidato refaz tudo do zero no próximo processo.</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">02 / 14</div>
+</section>
+
+<!-- SLIDE 3 - VIRADA -->
+<section class="slide dark" data-slide="3">
+  <div style="position:absolute; top:0; left:0; width:8px; height:100%; background: var(--orange);"></div>
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content">
+    <p style="color: var(--orange); font-weight: 800; font-size: 22px;">Kavuka Experts</p>
+    <h1 style="font-size: 72px; margin-top: 12px;">não é mais um ATS.</h1>
+    <p style="font-size: 32px; margin-top: 32px; line-height: 1.2;">É o primeiro <span style="color: var(--yellow); font-weight: 700;">ATS analítico com identidade comportamental portátil.</span></p>
+
+    <div style="margin-top: 56px; background: var(--near-dark); border: 1px solid var(--border-dark); border-radius: 12px; padding: 18px; text-align: center;">
+      <span style="font-weight: 700;">Big Data</span>
+      <span style="opacity: 0.4; margin: 0 16px;">+</span>
+      <span style="font-weight: 700; color: var(--orange);">KYID</span>
+      <span style="opacity: 0.4; margin: 0 16px;">+</span>
+      <span style="font-weight: 700;">Pipeline inteligente</span>
+    </div>
+  </div>
+  <div class="page-num">03 / 14</div>
+</section>
+
+<!-- SLIDE 4 - KYID CONCEITO -->
+<section class="slide light" data-slide="4">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>KYID — Conheça Sua Identidade</h2>
+    <p class="lead">A sigla revolucionária paralela a duas que o mercado já entende.</p>
+    <div class="cards cols-3">
+      <div class="card">
+        <div class="num" style="color: var(--muted)">KYC</div>
+        <div class="card-title">Know Your Customer</div>
+        <div class="card-sub">Bancos verificam clientes.</div>
+      </div>
+      <div class="card">
+        <div class="num" style="color: var(--muted)">KYE</div>
+        <div class="card-title">Know Your Employee</div>
+        <div class="card-sub">Empresas verificam funcionários.</div>
+      </div>
+      <div class="card card-featured">
+        <div class="num">KYID</div>
+        <div class="card-title">Know Your Identity</div>
+        <div class="card-sub">A SUA identidade comportamental, sua, permanente, portátil.</div>
+      </div>
+    </div>
+    <p class="tagline">A primeira sigla do RH onde o candidato é o protagonista.</p>
+  </div>
+  <div class="page-num">04 / 14</div>
+</section>
+
+<!-- SLIDE 5 - KYID PRÁTICA -->
+<section class="slide light" data-slide="5">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>Como o candidato vive a KYID</h2>
+    <p class="lead">Cinco coisas que ele recebe — e que nenhum ATS comum dá.</p>
+    <div class="row-list">
+      <div class="row">
+        <div class="row-icon">🪪</div>
+        <div class="row-text">
+          <div class="row-title">Link permanente</div>
+          <div class="row-sub">da própria identidade comportamental.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-icon">📲</div>
+        <div class="row-text">
+          <div class="row-title">QR code escaneável</div>
+          <div class="row-sub">qualquer pessoa valida com a câmera.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-icon">🌍</div>
+        <div class="row-text">
+          <div class="row-title">Portátil</div>
+          <div class="row-sub">leva pra qualquer empresa onde a Kavuka chegar.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-icon">📈</div>
+        <div class="row-text">
+          <div class="row-title">Aprofundável</div>
+          <div class="row-sub">cada nova avaliação enriquece a KYID.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-icon">🔐</div>
+        <div class="row-text">
+          <div class="row-title">Privacidade granular</div>
+          <div class="row-sub">candidato controla o que compartilha.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">05 / 14</div>
+</section>
+
+<!-- SLIDE 6 - EFEITO REDE -->
+<section class="slide dark" data-slide="6">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2 style="color: var(--light-text);">Por que cresce sozinha</h2>
+    <p class="lead">O efeito rede do KYID — duplo lado, alavanca exponencial.</p>
+    <div class="cards cols-3">
+      <div class="card" style="background: var(--near-dark); border-color: var(--border-dark);">
+        <div style="height: 4px; background: var(--yellow); margin: -22px -22px 16px -22px;"></div>
+        <div style="font-size: 48px; color: var(--orange); font-weight: 900; line-height: 1;">→</div>
+        <div class="card-title" style="color: var(--light-text); margin-top: 16px;">Mais empresas Kavuka</div>
+        <div class="card-sub" style="color: var(--muted-dark);">→ Mais valor pra cada KYID</div>
+      </div>
+      <div class="card" style="background: var(--near-dark); border-color: var(--border-dark);">
+        <div style="height: 4px; background: var(--yellow); margin: -22px -22px 16px -22px;"></div>
+        <div style="font-size: 48px; color: var(--orange); font-weight: 900; line-height: 1;">→</div>
+        <div class="card-title" style="color: var(--light-text); margin-top: 16px;">Mais candidatos com KYID</div>
+        <div class="card-sub" style="color: var(--muted-dark);">→ Mais empresas querem entrar</div>
+      </div>
+      <div class="card" style="background: var(--near-dark); border-color: var(--border-dark);">
+        <div style="height: 4px; background: var(--yellow); margin: -22px -22px 16px -22px;"></div>
+        <div style="font-size: 48px; color: var(--orange); font-weight: 900; line-height: 1;">↑</div>
+        <div class="card-title" style="color: var(--light-text); margin-top: 16px;">Engajamento alto</div>
+        <div class="card-sub" style="color: var(--muted-dark);">Candidato tem incentivo direto pra completar</div>
+      </div>
+    </div>
+    <p class="tagline" style="color: var(--yellow);">Cresce sozinha.</p>
+  </div>
+  <div class="page-num">06 / 14</div>
+</section>
+
+<!-- SLIDE 7 - 12 INSTRUMENTOS -->
+<section class="slide light" data-slide="7">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>12 instrumentos comportamentais por candidato</h2>
+    <p class="lead">Seis camadas científicas. O ATS comum entrega zero.</p>
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-num" style="background: #ff6a00;">01</div>
+        <div class="layer-camada">Camada 1 — Base científica</div>
+        <div class="layer-instr">IPIP-NEO-120 · Big Five curto · MBTI-like</div>
+      </div>
+      <div class="layer">
+        <div class="layer-num" style="background: #0ea5e9;">02</div>
+        <div class="layer-camada">Camada 2 — Comportamento</div>
+        <div class="layer-instr">DISC adaptado · Label GUÉP</div>
+      </div>
+      <div class="layer">
+        <div class="layer-num" style="background: #10b981;">03</div>
+        <div class="layer-camada">Camada 3 — Performance</div>
+        <div class="layer-instr">Gallup adaptado</div>
+      </div>
+      <div class="layer">
+        <div class="layer-num" style="background: #a855f7;">04</div>
+        <div class="layer-camada">Camada 4 — Risco</div>
+        <div class="layer-instr">Dark Triad · Hogan adaptado</div>
+      </div>
+      <div class="layer">
+        <div class="layer-num" style="background: #f59e0b;">05</div>
+        <div class="layer-camada">Camada 5 — Identidade</div>
+        <div class="layer-instr">Arquétipos (Jung) · Eneagrama</div>
+      </div>
+      <div class="layer">
+        <div class="layer-num" style="background: #10b981;">06</div>
+        <div class="layer-camada">Camada 6 — Síntese GUÉP</div>
+        <div class="layer-instr">Score Humano · Avaliação contínua</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">07 / 14</div>
+</section>
+
+<!-- SLIDE 8 - DIFERENCIAIS -->
+<section class="slide light" data-slide="8">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>O dash que ninguém mais entrega</h2>
+    <p class="lead">Cinco capacidades que viram diferencial competitivo na hora do pitch.</p>
+    <div class="row-list">
+      <div class="row">
+        <div class="row-num">1</div>
+        <div class="row-text">
+          <div class="row-title">Mapa interativo</div>
+          <div class="row-sub">Distância candidato × empresa, fit logístico nativo.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">2</div>
+        <div class="row-text">
+          <div class="row-title">Score Humano explicável</div>
+          <div class="row-sub">Cálculo aberto, peso por instrumento, sem caixa-preta.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">3</div>
+        <div class="row-text">
+          <div class="row-title">Drill-down por instrumento</div>
+          <div class="row-sub">Big Five com facetas, MBTI com magnitude, Eneagrama com tipo.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">4</div>
+        <div class="row-text">
+          <div class="row-title">Linguagem responsável</div>
+          <div class="row-sub">Forças e crescimento — sinalização, nunca diagnóstico clínico.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">5</div>
+        <div class="row-text">
+          <div class="row-title">Vocabulário clínico bloqueado</div>
+          <div class="row-sub">Por teste automatizado. CFP-friendly, blindagem legal.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">08 / 14</div>
+</section>
+
+<!-- SLIDE 9 - PIPELINE -->
+<section class="slide light" data-slide="9">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>Da vaga publicada ao Kanban — em automático</h2>
+    <p class="lead">Antes: 8 ferramentas, 3 planilhas, 12 e-mails. Agora: uma tela.</p>
+    <div class="steps">
+      <div class="step"><div class="step-circle">1</div><div class="step-label">Empresa publica vaga</div></div>
+      <div class="step"><div class="step-circle">2</div><div class="step-label">Aparece em /carreiras</div></div>
+      <div class="step"><div class="step-circle">3</div><div class="step-label">Candidato aplica</div></div>
+      <div class="step"><div class="step-circle">4</div><div class="step-label">Cai no Kanban</div></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">RH arrasta etapas</div></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Envia avaliação</div></div>
+      <div class="step"><div class="step-circle">7</div><div class="step-label">Score + KYID prontos</div></div>
+      <div class="step last"><div class="step-circle">8</div><div class="step-label">Decisão com dados</div></div>
+    </div>
+    <p class="tagline" style="margin-top: 48px;">Antes: 8 ferramentas + 3 planilhas + 12 e-mails. <br>Agora: <span style="color: var(--orange);">uma tela.</span></p>
+  </div>
+  <div class="page-num">09 / 14</div>
+</section>
+
+<!-- SLIDE 10 - BANCO DE TALENTOS -->
+<section class="slide light" data-slide="10">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>Pediram um perfil específico? 30 segundos.</h2>
+    <p class="lead">Filtros nativos por traço comportamental. Nenhum ATS no mercado entrega isso.</p>
+    <div class="split">
+      <div class="box">
+        <div class="box-eyebrow">Pedido da liderança</div>
+        <div class="box-headline" style="font-style: italic;">"Me dá uma pessoa amável que serve pra atendimento operacional."</div>
+        <div style="font-weight: 700; font-size: 11px; color: var(--muted); margin: 12px 0 8px;">Filtros aplicados em segundos:</div>
+        <ul>
+          <li>Big Five → Amabilidade: Alto</li>
+          <li>Big Five → Conscienciosidade: Alto</li>
+          <li>Cidade: São Paulo</li>
+          <li>Score Humano mínimo: 70</li>
+        </ul>
+      </div>
+      <div class="box featured-orange">
+        <div class="box-eyebrow">Resultado</div>
+        <div class="box-headline" style="font-size: 26px;">3 candidatos top</div>
+        <div style="font-size: 14px; color: var(--green); font-weight: 700; padding: 6px 0;">Ana Carolina Silva — Score 92</div>
+        <div style="font-size: 14px; padding: 6px 0;">Camila Ferreira — Score 81</div>
+        <div style="font-size: 14px; padding: 6px 0;">Bruno Oliveira — Score 73</div>
+        <div style="border-top: 1px solid var(--border-dark); margin-top: 12px; padding-top: 10px; font-style: italic; color: var(--yellow); font-size: 12px;">Lista pronta em 30 segundos.</div>
+      </div>
+    </div>
+    <p class="tagline">Filtros que ATS nenhum tem.</p>
+  </div>
+  <div class="page-num">10 / 14</div>
+</section>
+
+<!-- SLIDE 11 - CENÁRIOS RH -->
+<section class="slide light" data-slide="11">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>Como a gestora de RH usa, no dia a dia</h2>
+    <p class="lead">Cinco cenários reais que cabem em uma manhã.</p>
+    <div class="row-list">
+      <div class="row">
+        <div class="row-num">1</div>
+        <div class="row-text">
+          <div class="row-title">Abre vaga nova</div>
+          <div class="row-sub">Publica em /carreiras com 1 clique. Divulga no LinkedIn.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">2</div>
+        <div class="row-text">
+          <div class="row-title">Recebe sem fazer nada</div>
+          <div class="row-sub">Candidatos caem direto no Kanban da vaga.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">3</div>
+        <div class="row-text">
+          <div class="row-title">Triagem matinal</div>
+          <div class="row-sub">Arrasta cards, abre perfil 360°, envia avaliação por WhatsApp.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">4</div>
+        <div class="row-text">
+          <div class="row-title">Banco de talentos</div>
+          <div class="row-sub">Liderança pede perfil amável → filtra → indica em segundos.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-num">5</div>
+        <div class="row-text">
+          <div class="row-title">Apresenta pra liderança</div>
+          <div class="row-sub">Baixa PDF da KYID (1 página com QR) → decisão em 5 minutos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">11 / 14</div>
+</section>
+
+<!-- SLIDE 12 - LGPD -->
+<section class="slide light" data-slide="12">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>Compliance não é checkbox — é design</h2>
+    <p class="lead">LGPD aplicada na arquitetura, não como afterthought.</p>
+    <div class="row-list">
+      <div class="row">
+        <span class="row-tag">art. 7º</span>
+        <div class="row-text">
+          <div class="row-title">Consentimento explícito</div>
+          <div class="row-sub">Checkbox dedicado antes de iniciar avaliação.</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-tag">art. 20</span>
+        <div class="row-text">
+          <div class="row-title">Direito de contestação</div>
+          <div class="row-sub">Aviso visível em toda página de resultado.</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-tag">CFP</span>
+        <div class="row-text">
+          <div class="row-title">Vocabulário clínico bloqueado</div>
+          <div class="row-sub">Teste automatizado rejeita build se aparecer.</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-tag">auditoria</span>
+        <div class="row-text">
+          <div class="row-title">Retenção controlada</div>
+          <div class="row-sub">Cada avaliação carrega data_retention_until.</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-tag">P1</span>
+        <div class="row-text">
+          <div class="row-title">Privacidade granular</div>
+          <div class="row-sub">Candidato escolhe quais camadas torna públicas.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">12 / 14</div>
+</section>
+
+<!-- SLIDE 13 - ROADMAP -->
+<section class="slide light" data-slide="13">
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2>Onde estamos. Onde vamos.</h2>
+    <p class="lead">Versão atual em produção, próximas semanas em construção, roadmap mapeado.</p>
+    <div class="cards cols-3" style="margin-top: 20px;">
+      <div class="card" style="padding-top: 0;">
+        <div style="margin: -22px -22px 0 -22px; padding: 8px; background: var(--green); color: #fff; text-align: center; font-size: 11px; font-weight: 800; letter-spacing: 2px; border-radius: 16px 16px 0 0;">v0.1 EM PRODUÇÃO</div>
+        <div style="padding-top: 16px;">
+          <div style="font-size: 18px; font-weight: 800; margin-bottom: 12px;">✅ Hoje</div>
+          <ul style="list-style: none; font-size: 12px;">
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>ATS completo (vagas, candidatos, kanban)</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>IPIP-NEO-120 real (120 itens)</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Score Humano sintetizando 12 instrumentos</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>KYID com selo + QR + PDF</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Big Data Dashboard 360°</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Mapa interativo com distância</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Banco de talentos com filtros</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Linguagem clínica blindada</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="padding-top: 0;">
+        <div style="margin: -22px -22px 0 -22px; padding: 8px; background: var(--orange); color: #fff; text-align: center; font-size: 11px; font-weight: 800; letter-spacing: 2px; border-radius: 16px 16px 0 0;">v0.2 PRÓX SEMANAS</div>
+        <div style="padding-top: 16px;">
+          <div style="font-size: 18px; font-weight: 800; margin-bottom: 12px;">🔄 Em construção</div>
+          <ul style="list-style: none; font-size: 12px;">
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Marco 2 da pesquisa</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>DISC, Label, Gallup, Dark Triad, Hogan</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Carreiras públicas /carreiras</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Auto-cadastro de candidato + CV</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Privacidade granular do KYID</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Versionamento KYID v1 → v2</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="padding-top: 0;">
+        <div style="margin: -22px -22px 0 -22px; padding: 8px; background: #a855f7; color: #fff; text-align: center; font-size: 11px; font-weight: 800; letter-spacing: 2px; border-radius: 16px 16px 0 0;">v1.0 ROADMAP</div>
+        <div style="padding-top: 16px;">
+          <div style="font-size: 18px; font-weight: 800; margin-bottom: 12px;">🌅 Próximos meses</div>
+          <ul style="list-style: none; font-size: 12px;">
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>12 microsserviços reais</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Academy Kavuka (trilhas)</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Talent Broker (monetização)</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Validação psicométrica BR</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>WhatsApp conversacional</li>
+            <li style="padding: 3px 0 3px 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--orange); font-weight: 900;">·</span>Selo com assinatura criptográfica</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">13 / 14</div>
+</section>
+
+<!-- SLIDE 14 - PRÓXIMOS PASSOS -->
+<section class="slide dark" data-slide="14">
+  <div class="glow-orange" style="bottom:-300px;left:-200px"></div>
+  <div class="brand">
+    <div class="brand-logo">K</div>
+    <div>
+      <div class="brand-name">Kavuka KYID</div>
+      <div class="brand-tag">Conheça Sua Identidade</div>
+    </div>
+  </div>
+  <div class="body-content top">
+    <h2 style="color: var(--light-text); font-size: 48px;">Pra ontem</h2>
+    <p class="lead">Cinco coisas que precisam acontecer já.</p>
+    <div class="row-list">
+      <div class="row" style="background: var(--near-dark); border-color: var(--border-dark); border-left-color: var(--orange);">
+        <div class="row-num">1</div>
+        <div class="row-text">
+          <div class="row-title" style="color: var(--light-text);">Validar fluxo com 3 gestores de RH</div>
+        </div>
+      </div>
+      <div class="row" style="background: var(--near-dark); border-color: var(--border-dark); border-left-color: var(--orange);">
+        <div class="row-num">2</div>
+        <div class="row-text">
+          <div class="row-title" style="color: var(--light-text);">Cliente piloto: GUÉP interno vira case</div>
+        </div>
+      </div>
+      <div class="row" style="background: var(--near-dark); border-color: var(--border-dark); border-left-color: var(--orange);">
+        <div class="row-num">3</div>
+        <div class="row-text">
+          <div class="row-title" style="color: var(--light-text);">Registro INPI da marca KYID — antes de qualquer divulgação</div>
+        </div>
+      </div>
+      <div class="row" style="background: var(--near-dark); border-color: var(--border-dark); border-left-color: var(--orange);">
+        <div class="row-num">4</div>
+        <div class="row-text">
+          <div class="row-title" style="color: var(--light-text);">Campanha de aquisição focada em varejo, atendimento, logística</div>
+        </div>
+      </div>
+      <div class="row" style="background: var(--near-dark); border-color: var(--border-dark); border-left-color: var(--orange);">
+        <div class="row-num">5</div>
+        <div class="row-text">
+          <div class="row-title" style="color: var(--light-text);">Parcerias com profissionais de psicologia organizacional</div>
+        </div>
+      </div>
+    </div>
+    <div class="closing-quote">
+      <span class="q1">Currículo é o que você diz que fez.</span><br>
+      <span class="q2">KYID é quem você é.</span>
+    </div>
+  </div>
+  <div class="page-num">14 / 14</div>
+</section>
+
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button id="btnPrev" title="Anterior">‹</button>
+  <span class="indicator" id="indicator">01 / 14</span>
+  <button id="btnNext" title="Próximo">›</button>
+  <button id="btnFs" title="Tela cheia" style="margin-left: 8px;">⛶</button>
+</div>
+
+<script>
+(function() {
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  let idx = 0;
+  const ind = document.getElementById("indicator");
+  const btnPrev = document.getElementById("btnPrev");
+  const btnNext = document.getElementById("btnNext");
+  const btnFs = document.getElementById("btnFs");
+
+  function go(n) {
+    if (n < 0 || n >= slides.length) return;
+    slides[idx].classList.remove("active");
+    idx = n;
+    slides[idx].classList.add("active");
+    ind.textContent = String(idx + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
+    btnPrev.disabled = idx === 0;
+    btnNext.disabled = idx === slides.length - 1;
+    if (location.hash !== "#" + (idx + 1)) location.hash = String(idx + 1);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); go(idx + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); go(slides.length - 1); }
+    else if (e.key === "f" || e.key === "F") { document.documentElement.requestFullscreen?.(); }
+  });
+
+  btnPrev.addEventListener("click", () => go(idx - 1));
+  btnNext.addEventListener("click", () => go(idx + 1));
+  btnFs.addEventListener("click", () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen?.();
+  });
+
+  // Initial slide from hash
+  const initial = parseInt(location.hash.slice(1)) - 1;
+  if (initial > 0 && initial < slides.length) go(initial);
+  else go(0);
+
+  // Touch swipe
+  let touchX = 0;
+  document.addEventListener("touchstart", (e) => { touchX = e.touches[0].clientX; });
+  document.addEventListener("touchend", (e) => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 60) go(dx > 0 ? idx - 1 : idx + 1);
+  });
+})();
+</script>
+</body>
+</html>

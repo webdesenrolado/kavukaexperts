@@ -1,0 +1,238 @@
+@import "tailwindcss";
+
+@theme {
+  --color-kavuka-primary: #ff6a00;
+  --color-kavuka-accent: #ffcc00;
+  --color-kavuka-ink: #0a0a0b;
+  --color-kavuka-paper: #f7f7f5;
+}
+
+:root {
+  color-scheme: light;
+  --background: #f7f7f5;
+  --foreground: #0a0a0b;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --card: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #0a0a0b;
+    --foreground: #f5f5f4;
+    --muted: #9ca3af;
+    --border: #27272a;
+    --card: #161618;
+  }
+}
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ====================================================================== */
+/* KYID Print Sheet — visible only on @media print                        */
+/* ====================================================================== */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+  }
+  body {
+    background: #fff !important;
+    color: #0a0a0b !important;
+  }
+  /* Esconde TUDO da página exceto a folha imprimível */
+  body * {
+    visibility: hidden;
+  }
+  .kyid-print-sheet,
+  .kyid-print-sheet * {
+    visibility: visible;
+  }
+  .kyid-print-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff;
+    color: #0a0a0b;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.4;
+    padding: 0;
+  }
+}
+
+.kyid-print-sheet {
+  display: none;
+}
+
+@media print {
+  .kyid-print-sheet { display: block; }
+
+  .kyid-print-header {
+    display: flex;
+    align-items: center;
+    gap: 10pt;
+    border-bottom: 2pt solid #ff6a00;
+    padding-bottom: 8pt;
+    margin-bottom: 12pt;
+  }
+  .kyid-print-logo {
+    position: relative;
+    width: 36pt; height: 36pt;
+    background: linear-gradient(135deg, #ff6a00, #ffcc00);
+    border-radius: 8pt;
+    display: flex; align-items: center; justify-content: center;
+    color: #0a0a0b;
+    font-weight: 900; font-size: 18pt;
+  }
+  .kyid-print-id {
+    position: absolute;
+    bottom: -3pt; right: -3pt;
+    background: #0a0a0b; color: #fff;
+    font-size: 6pt; font-weight: 700;
+    padding: 1pt 3pt; border-radius: 3pt;
+    letter-spacing: 0.5pt;
+  }
+  .kyid-print-title { display: flex; flex-direction: column; flex: 1; }
+  .kyid-print-title strong { font-size: 13pt; }
+  .kyid-print-title span { font-size: 8pt; color: #666; text-transform: uppercase; letter-spacing: 1pt; }
+  .kyid-print-meta { font-size: 8pt; color: #666; }
+
+  .kyid-print-name {
+    font-size: 22pt;
+    font-weight: 800;
+    margin: 4pt 0 12pt 0;
+    letter-spacing: -0.5pt;
+  }
+
+  .kyid-print-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8pt;
+    margin-bottom: 14pt;
+  }
+  .kyid-print-stat {
+    border: 1pt solid #ddd;
+    border-radius: 4pt;
+    padding: 6pt 8pt;
+    display: flex; flex-direction: column;
+  }
+  .kyid-print-stat-label {
+    font-size: 7pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.8pt;
+    margin-bottom: 2pt;
+  }
+  .kyid-print-stat-value { font-size: 11pt; font-weight: 700; color: #0a0a0b; }
+  .kyid-print-stat-big { font-size: 16pt; color: #10b981; }
+  .kyid-print-stat-mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .kyid-print-stat-sub { font-size: 7pt; color: #888; margin-top: 1pt; }
+
+  .kyid-print-section {
+    margin-bottom: 12pt;
+    page-break-inside: avoid;
+  }
+  .kyid-print-section h2 {
+    font-size: 10pt;
+    font-weight: 700;
+    border-bottom: 1pt solid #ff6a00;
+    padding-bottom: 2pt;
+    margin-bottom: 6pt;
+    color: #0a0a0b;
+  }
+  .kyid-print-bigfive { display: flex; flex-direction: column; gap: 3pt; }
+  .kyid-print-bigfive-row {
+    display: flex; justify-content: space-between;
+    padding: 3pt 6pt;
+    background: #f7f7f5;
+    border-radius: 3pt;
+    font-size: 9pt;
+  }
+  .kyid-print-bigfive-name { font-weight: 500; }
+  .kyid-print-bigfive-level {
+    font-size: 8pt; font-weight: 700;
+    padding: 1pt 6pt; border-radius: 8pt;
+  }
+  .kyid-print-level-high { background: #ff6a0020; color: #ff6a00; }
+  .kyid-print-level-low { background: #ef444420; color: #ef4444; }
+  .kyid-print-level-mid { background: #ddd; color: #666; }
+
+  .kyid-print-list {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .kyid-print-list li {
+    font-size: 9pt;
+    padding: 2pt 0 2pt 14pt;
+    position: relative;
+  }
+  .kyid-print-list li::before {
+    content: "·";
+    position: absolute; left: 4pt;
+    color: #ff6a00; font-weight: 900;
+  }
+
+  .kyid-print-footer {
+    margin-top: 14pt;
+    padding-top: 10pt;
+    border-top: 2pt solid #ff6a00;
+    display: grid;
+    grid-template-columns: 80pt 1fr;
+    gap: 12pt;
+    align-items: start;
+    page-break-inside: avoid;
+  }
+  .kyid-print-qr {
+    width: 80pt; height: 80pt;
+    background: #fff; padding: 2pt;
+    border: 1pt solid #ddd;
+  }
+  .kyid-print-qr svg { width: 100%; height: 100%; }
+  .kyid-print-footer-text { font-size: 8pt; line-height: 1.4; }
+  .kyid-print-footer-text strong { font-size: 9pt; }
+  .kyid-print-url {
+    display: block;
+    font-family: ui-monospace, monospace;
+    margin: 1pt 0 6pt 0;
+    word-break: break-all;
+  }
+  .kyid-print-footer-text p { margin: 0; color: #666; }
+  .kyid-print-watermark {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 4pt;
+    justify-content: center;
+    font-size: 7pt; color: #999;
+    margin-top: 8pt;
+    text-transform: uppercase; letter-spacing: 1pt;
+  }
+}
+
+/* Leaflet popup overrides */
+.leaflet-popup-content-wrapper {
+  background: #0a0a0b !important;
+  color: #f5f5f4 !important;
+  border-radius: 12px !important;
+}
+.leaflet-popup-tip {
+  background: #0a0a0b !important;
+}
+.leaflet-popup-content a {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+.leaflet-popup-close-button {
+  color: rgba(255,255,255,0.5) !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #fff !important;
+}

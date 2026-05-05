@@ -1,0 +1,52 @@
+{
+  "name": "kavuka-experts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3355",
+    "build": "next build",
+    "start": "next start --port 3355",
+    "lint": "eslint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "seed": "tsx scripts/seed.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:demo-extra": "tsx scripts/seed-demo-extra.ts",
+    "seed:inbox": "tsx scripts/seed-inbox.ts",
+    "setup": "tsx scripts/setup.ts"
+  },
+  "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
+    "@types/leaflet": "^1.9.21",
+    "@types/qrcode": "^1.5.6",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "jose": "^6.2.2",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.7.0",
+    "nanoid": "^5.1.7",
+    "next": "16.2.2",
+    "postgres": "^3.4.9",
+    "qrcode": "^1.5.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-leaflet": "^5.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.2",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.6",
+    "typescript": "^5"
+  }
+}
