@@ -15,6 +15,9 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "seed:demo-extra": "tsx scripts/seed-demo-extra.ts",
     "seed:inbox": "tsx scripts/seed-inbox.ts",
+    "seed:vagas": "tsx scripts/seed-vagas-guep.ts",
+    "extract:talentos": "python3 scripts/extract-csv-talentos.py",
+    "import:talentos": "tsx scripts/import-talentos.ts",
     "setup": "tsx scripts/setup.ts"
   },
   "dependencies": {

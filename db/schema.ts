@@ -55,27 +55,102 @@ export const candidates = pgTable("candidates", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
+  phoneAlt: text("phone_alt"),
   cpf: text("cpf"),
+  rg: text("rg"),
   birthDate: text("birth_date"),
+  age: integer("age"),
+  gender: text("gender"),
+  maritalStatus: text("marital_status"),
+  nationality: text("nationality"),
+  // Endereço
+  cep: text("cep"),
+  address: text("address"),
+  addressNumber: text("address_number"),
+  addressComplement: text("address_complement"),
+  neighborhood: text("neighborhood"),
   city: text("city"),
   state: text("state"),
-  address: text("address"),
   lat: text("lat"),
   lng: text("lng"),
+  // Profissional
   avatarUrl: text("avatar_url"),
   linkedinUrl: text("linkedin_url"),
+  githubUrl: text("github_url"),
+  portfolioUrl: text("portfolio_url"),
+  summary: text("summary"),
   currentCompany: text("current_company"),
   currentRole: text("current_role"),
   yearsExperience: integer("years_experience"),
   educationLevel: text("education_level"),
   expectedSalary: integer("expected_salary"),
+  // Sistema
   kyidToken: text("kyid_token").unique(),
   ichJson: text("ich_json"),
   resumeUrl: text("resume_url"),
+  resumeFilename: text("resume_filename"),
+  rawResumeText: text("raw_resume_text"),
   source: text("source"),
   consentLgpdAt: timestamp("consent_lgpd_at"),
+  // Auth self-service (preparado pro portal — ainda não em uso)
+  passwordHash: text("password_hash"),
+  emailVerified: boolean("email_verified").default(false),
+  resetToken: text("reset_token"),
+  resetTokenExpiresAt: timestamp("reset_token_expires_at"),
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
   updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
+});
+
+export const candidateExperiences = pgTable("candidate_experiences", {
+  id: text("id").primaryKey(),
+  candidateId: text("candidate_id").notNull().references(() => candidates.id, { onDelete: "cascade" }),
+  company: text("company").notNull(),
+  role: text("role").notNull(),
+  location: text("location"),
+  employmentType: text("employment_type"),
+  startDate: text("start_date"),
+  endDate: text("end_date"),
+  current: boolean("current").default(false),
+  description: text("description"),
+  achievements: text("achievements"),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+});
+
+export const candidateEducations = pgTable("candidate_educations", {
+  id: text("id").primaryKey(),
+  candidateId: text("candidate_id").notNull().references(() => candidates.id, { onDelete: "cascade" }),
+  institution: text("institution").notNull(),
+  course: text("course"),
+  level: text("level"),
+  status: text("status"),
+  startYear: integer("start_year"),
+  endYear: integer("end_year"),
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+});
+
+export const candidateSkills = pgTable("candidate_skills", {
+  id: text("id").primaryKey(),
+  candidateId: text("candidate_id").notNull().references(() => candidates.id, { onDelete: "cascade" }),
+  skill: text("skill").notNull(),
+  level: text("level"),
+  category: text("category"),
+  yearsOfUse: integer("years_of_use"),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+});
+
+export const candidateLanguages = pgTable("candidate_languages", {
+  id: text("id").primaryKey(),
+  candidateId: text("candidate_id").notNull().references(() => candidates.id, { onDelete: "cascade" }),
+  language: text("language").notNull(),
+  level: text("level"),
+  certification: text("certification"),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
 });
 
 export const applications = pgTable("applications", {
