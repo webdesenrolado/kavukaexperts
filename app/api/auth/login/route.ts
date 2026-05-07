@@ -36,9 +36,14 @@ export async function POST(request: NextRequest) {
     companyId: user.companyId,
   });
 
+  const cookieSecure =
+    process.env.COOKIE_SECURE === "false"
+      ? false
+      : process.env.NODE_ENV === "production";
+
   response.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7,
     path: "/",
