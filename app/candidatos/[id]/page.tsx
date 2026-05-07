@@ -2,8 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { db } from "@/db";
-import { candidates, applications, jobs, assessments, companies } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import {
+  candidates,
+  applications,
+  jobs,
+  assessments,
+  companies,
+  candidateExperiences,
+  candidateEducations,
+  candidateSkills,
+  candidateLanguages,
+} from "@/db/schema";
+import { eq, desc, asc } from "drizzle-orm";
 import {
   ArrowLeft,
   Briefcase,
@@ -20,6 +30,14 @@ import {
   Navigation,
   FileText,
   AlertTriangle,
+  User,
+  Home,
+  Languages,
+  Wrench,
+  Github,
+  Globe,
+  Calendar,
+  IdCard,
 } from "lucide-react";
 import { InviteButton } from "./invite-button";
 import { MapViewLoader, type MapPoint } from "@/components/map-view-loader";
@@ -86,14 +104,54 @@ async function getCandidateData(id: string) {
     .where(eq(assessments.candidateId, id))
     .orderBy(desc(assessments.createdAt));
 
-  return { candidate, applications: apps, assessments: assessmentList };
+  const experiences = await db
+    .select()
+    .from(candidateExperiences)
+    .where(eq(candidateExperiences.candidateId, id))
+    .orderBy(asc(candidateExperiences.sortOrder), desc(candidateExperiences.startDate));
+
+  const educations = await db
+    .select()
+    .from(candidateEducations)
+    .where(eq(candidateEducations.candidateId, id))
+    .orderBy(asc(candidateEducations.sortOrder), desc(candidateEducations.endYear));
+
+  const skills = await db
+    .select()
+    .from(candidateSkills)
+    .where(eq(candidateSkills.candidateId, id))
+    .orderBy(asc(candidateSkills.sortOrder));
+
+  const languages = await db
+    .select()
+    .from(candidateLanguages)
+    .where(eq(candidateLanguages.candidateId, id))
+    .orderBy(asc(candidateLanguages.sortOrder));
+
+  return {
+    candidate,
+    applications: apps,
+    assessments: assessmentList,
+    experiences,
+    educations,
+    skills,
+    languages,
+  };
 }
 
 export default async function CandidatoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const data = await getCandidateData(id);
   if (!data) notFound();
-  const { candidate, applications: apps, assessments: assessmentList } = data;
+  const {
+    candidate,
+    applications: apps,
+    assessments: assessmentList,
+    experiences,
+    educations,
+    skills,
+    languages,
+  } = data;
 
   // Score Humano sintético (do instrumento score-humano se existir)
   const scoreHumanoAssess = assessmentList.find((a) => a.instrument === "score-humano");
@@ -372,6 +430,253 @@ export default async function CandidatoDetailPage({ params }: { params: Promise<
           )}
         </section>
 
+        {/* RESUMO PROFISSIONAL */}
+        {candidate.summary && (
+          <Section icon={<Sparkles size={16} className="text-[#ff6a00]" />} title="Resumo profissional">
+            <p className="text-sm leading-relaxed opacity-90 whitespace-pre-wrap">{candidate.summary}</p>
+          </Section>
+        )}
+
+        {/* DADOS PESSOAIS */}
+        <Section icon={<User size={16} className="text-[#0ea5e9]" />} title="Dados pessoais">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Field label="CPF" value={candidate.cpf} mono />
+            <Field label="RG" value={candidate.rg} mono />
+            <Field
+              label="Nascimento"
+              value={
+                candidate.birthDate
+                  ? new Date(candidate.birthDate).toLocaleDateString("pt-BR")
+                  : null
+              }
+            />
+            <Field label="Idade" value={candidate.age ? `${candidate.age} anos` : null} />
+            <Field label="Gênero" value={candidate.gender} />
+            <Field label="Estado civil" value={candidate.maritalStatus} />
+            <Field label="Nacionalidade" value={candidate.nationality} />
+            <Field label="Telefone alt" value={candidate.phoneAlt} mono />
+          </div>
+        </Section>
+
+        {/* ENDEREÇO */}
+        <Section icon={<Home size={16} className="text-[#10b981]" />} title="Endereço">
+          {candidate.cep || candidate.address || candidate.city ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Field label="CEP" value={candidate.cep} mono />
+              <Field label="Logradouro" value={candidate.address} />
+              <Field label="Número" value={candidate.addressNumber} />
+              <Field label="Complemento" value={candidate.addressComplement} />
+              <Field label="Bairro" value={candidate.neighborhood} />
+              <Field label="Cidade" value={candidate.city} />
+              <Field label="UF" value={candidate.state} />
+            </div>
+          ) : (
+            <EmptyState message="Endereço ainda não cadastrado." />
+          )}
+        </Section>
+
+        {/* FORMAÇÃO */}
+        <Section
+          icon={<GraduationCap size={16} className="text-[#a855f7]" />}
+          title={`Formação acadêmica${educations.length ? ` (${educations.length})` : ""}`}
+        >
+          {educations.length === 0 ? (
+            <EmptyState message="Nenhuma formação cadastrada." />
+          ) : (
+            <div className="space-y-3">
+              {educations.map((e) => (
+                <div
+                  key={e.id}
+                  className="border rounded-lg p-4"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <div className="font-semibold">{e.course || e.level || "—"}</div>
+                      <div className="text-sm opacity-80">{e.institution}</div>
+                      {e.description && (
+                        <p className="text-xs opacity-70 mt-2">{e.description}</p>
+                      )}
+                    </div>
+                    <div className="text-xs opacity-70 text-right shrink-0">
+                      {e.startYear && e.endYear
+                        ? `${e.startYear} – ${e.endYear}`
+                        : e.endYear
+                          ? `Concluído em ${e.endYear}`
+                          : e.startYear
+                            ? `Desde ${e.startYear}`
+                            : ""}
+                      {e.status && (
+                        <div className="mt-1 inline-block px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 capitalize">
+                          {e.status}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* EXPERIÊNCIAS */}
+        <Section
+          icon={<Briefcase size={16} className="text-[#ff6a00]" />}
+          title={`Experiência profissional${experiences.length ? ` (${experiences.length})` : ""}`}
+        >
+          {experiences.length === 0 ? (
+            <EmptyState message="Nenhuma experiência cadastrada." />
+          ) : (
+            <div className="space-y-3">
+              {experiences.map((x) => (
+                <div
+                  key={x.id}
+                  className="border rounded-lg p-4"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <div className="font-semibold">{x.role}</div>
+                      <div className="text-sm opacity-80 inline-flex items-center gap-1">
+                        <Building2 size={11} className="inline" />
+                        {x.company}
+                        {x.location && (
+                          <span className="opacity-70 ml-2">· {x.location}</span>
+                        )}
+                      </div>
+                      {x.description && (
+                        <p className="text-xs opacity-70 mt-2 whitespace-pre-wrap">{x.description}</p>
+                      )}
+                      {x.achievements && (
+                        <div className="text-xs opacity-80 mt-2 pl-3 border-l-2" style={{ borderColor: "#ff6a00" }}>
+                          <strong className="text-[#ff6a00]">Principais entregas:</strong>{" "}
+                          {x.achievements}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs opacity-70 text-right shrink-0">
+                      {x.startDate && (
+                        <div>
+                          {x.startDate}
+                          {" – "}
+                          {x.current ? (
+                            <strong className="text-[#10b981]">atual</strong>
+                          ) : (
+                            x.endDate || "?"
+                          )}
+                        </div>
+                      )}
+                      {x.employmentType && (
+                        <div className="mt-1 capitalize opacity-60">{x.employmentType}</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* SKILLS */}
+        <Section
+          icon={<Wrench size={16} className="text-[#f59e0b]" />}
+          title={`Skills${skills.length ? ` (${skills.length})` : ""}`}
+        >
+          {skills.length === 0 ? (
+            <EmptyState message="Nenhuma skill cadastrada." />
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {skills.map((s) => (
+                <span
+                  key={s.id}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border"
+                  style={{ borderColor: "var(--border)", background: "var(--card)" }}
+                  title={s.category ?? undefined}
+                >
+                  {s.skill}
+                  {s.level && <span className="opacity-60 text-[10px] uppercase">· {s.level}</span>}
+                  {s.yearsOfUse && <span className="opacity-60 text-[10px]">· {s.yearsOfUse}a</span>}
+                </span>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* IDIOMAS */}
+        <Section
+          icon={<Languages size={16} className="text-[#0ea5e9]" />}
+          title={`Idiomas${languages.length ? ` (${languages.length})` : ""}`}
+        >
+          {languages.length === 0 ? (
+            <EmptyState message="Nenhum idioma cadastrado." />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {languages.map((l) => (
+                <div
+                  key={l.id}
+                  className="border rounded-lg p-3"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <div className="font-semibold text-sm">{l.language}</div>
+                  {l.level && (
+                    <div className="text-xs opacity-70 capitalize mt-0.5">{l.level}</div>
+                  )}
+                  {l.certification && (
+                    <div className="text-[10px] opacity-60 mt-1">{l.certification}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* LINKS / CURRÍCULO ORIGINAL */}
+        {(candidate.resumeUrl || candidate.githubUrl || candidate.portfolioUrl) && (
+          <Section icon={<Globe size={16} className="text-[#a855f7]" />} title="Links e currículo">
+            <div className="flex flex-wrap gap-3">
+              {candidate.resumeUrl && (
+                <a
+                  href={candidate.resumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-black/5 dark:hover:bg-white/5 text-sm"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <FileText size={14} className="text-[#ff6a00]" />
+                  Currículo original (PDF)
+                  <ExternalLink size={11} className="opacity-60" />
+                </a>
+              )}
+              {candidate.githubUrl && (
+                <a
+                  href={candidate.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-black/5 dark:hover:bg-white/5 text-sm"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <Github size={14} />
+                  GitHub
+                  <ExternalLink size={11} className="opacity-60" />
+                </a>
+              )}
+              {candidate.portfolioUrl && (
+                <a
+                  href={candidate.portfolioUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-black/5 dark:hover:bg-white/5 text-sm"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <Globe size={14} className="text-[#0ea5e9]" />
+                  Portfolio
+                  <ExternalLink size={11} className="opacity-60" />
+                </a>
+              )}
+            </div>
+          </Section>
+        )}
+
         {/* CV / ICH */}
         <section
           className="rounded-xl border p-5 mb-4"
@@ -440,6 +745,62 @@ function BigStat({
         {value}
       </div>
       <div className="text-[10px] opacity-60 mt-0.5">{sub}</div>
+    </div>
+  );
+}
+
+function Section({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className="rounded-xl border p-5 mb-4"
+      style={{ background: "var(--card)", borderColor: "var(--border)" }}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        {icon}
+        <h2 className="font-semibold">{title}</h2>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Field({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string | null | undefined;
+  mono?: boolean;
+}) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider opacity-60 mb-0.5">{label}</div>
+      <div className={`text-sm ${mono ? "font-mono" : ""} ${value ? "" : "opacity-40 italic"}`}>
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div
+      className="p-6 rounded-lg border border-dashed text-center"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <p className="text-sm opacity-60">{message}</p>
+      <p className="text-[10px] opacity-40 mt-1">
+        Será preenchido quando o candidato acessar o portal self-service.
+      </p>
     </div>
   );
 }
