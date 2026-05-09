@@ -248,3 +248,101 @@ export const assessments = pgTable("assessments", {
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
 });
+
+// ===========================================================
+// NR-1 — Avaliação de riscos psicossociais (NR-1 + COPSOQ-III)
+// ===========================================================
+
+/** Colaborador de empresa cliente B2B (DIFERENTE de candidates) */
+export const employees = pgTable("employees", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  cpf: text("cpf"),
+  role: text("role"),
+  department: text("department"),
+  managerId: text("manager_id"),
+  hiredAt: timestamp("hired_at"),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
+});
+
+/** Campanha de avaliação NR-1 (uma rodada de envio + coleta) */
+export const nr1Campaigns = pgTable("nr1_campaigns", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  questionnaireVersion: text("questionnaire_version").notNull().default("1.0.0"),
+  status: text("status").notNull().default("draft"), // draft | active | closed
+  isAnonymous: boolean("is_anonymous").default(true),
+  targetCount: integer("target_count").default(0),
+  responseCount: integer("response_count").default(0),
+  startedAt: timestamp("started_at"),
+  endsAt: timestamp("ends_at"),
+  closedAt: timestamp("closed_at"),
+  createdBy: text("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
+});
+
+/** Convite individual com token público (1 por colaborador alvo). */
+export const nr1Invitations = pgTable("nr1_invitations", {
+  id: text("id").primaryKey(),
+  campaignId: text("campaign_id").notNull().references(() => nr1Campaigns.id, { onDelete: "cascade" }),
+  employeeId: text("employee_id").references(() => employees.id, { onDelete: "set null" }),
+  token: text("token").notNull().unique(),
+  email: text("email"),
+  phone: text("phone"),
+  channel: text("channel"), // email | whatsapp | both
+  emailSentAt: timestamp("email_sent_at"),
+  whatsappLinkOpenedAt: timestamp("whatsapp_link_opened_at"),
+  openedAt: timestamp("opened_at"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+});
+
+/** Resposta de um colaborador a uma campanha (anônima por padrão) */
+export const nr1Responses = pgTable("nr1_responses", {
+  id: text("id").primaryKey(),
+  campaignId: text("campaign_id").notNull().references(() => nr1Campaigns.id, { onDelete: "cascade" }),
+  companyId: text("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  invitationId: text("invitation_id").references(() => nr1Invitations.id, { onDelete: "set null" }),
+  employeeId: text("employee_id").references(() => employees.id, { onDelete: "set null" }),
+  // Demografia opcional pra segmentação (sem identificar)
+  department: text("department"),
+  role: text("role"),
+  ageBand: text("age_band"), // 18-24, 25-34, 35-44, 45-54, 55+
+  tenureBand: text("tenure_band"), // <1y, 1-3y, 3-5y, 5-10y, 10+y
+  // 13 respostas (Likert 1-5 cada)
+  q1: integer("q1"),
+  q2: integer("q2"),
+  q3: integer("q3"),
+  q4: integer("q4"),
+  q5: integer("q5"),
+  q6: integer("q6"),
+  q7: integer("q7"),
+  q8: integer("q8"),
+  q9: integer("q9"),
+  q10: integer("q10"),
+  q11: integer("q11"),
+  q12: integer("q12"),
+  q13: integer("q13"),
+  comment: text("comment"),
+  // Scores calculados na hora do submit (cache pra dashboard rápido)
+  scoreDemandas: integer("score_demandas"), // 0-100
+  scoreAutonomia: integer("score_autonomia"),
+  scoreLideranca: integer("score_lideranca"),
+  scoreRisco: integer("score_risco"),
+  scoreBemestar: integer("score_bemestar"),
+  scoreOverall: integer("score_overall"),
+  riskBand: text("risk_band"), // low | medium | high
+  flags: text("flags"), // CSV de qIds que dispararam alerta
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  submittedAt: timestamp("submitted_at").$defaultFn(() => new Date()),
+});
