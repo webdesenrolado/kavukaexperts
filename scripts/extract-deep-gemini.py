@@ -25,9 +25,9 @@ OUTPUT = DBT / "extracted-deep.json"
 
 API_KEY = os.environ.get("GEMINI_API_KEY")
 MODEL = "gemini-2.5-flash-lite"
-MAX_CONCURRENT = 1  # free tier ~15 RPM — single worker com delay é mais estável
-DELAY_BETWEEN_REQS = 4.5  # ~13 RPM, margem abaixo do limite
-MAX_RETRIES = 4
+MAX_CONCURRENT = 1
+DELAY_BETWEEN_REQS = 7.0  # ~8.5 RPM, margem confortável (free tier varia 10-15 RPM)
+MAX_RETRIES = 5
 TIMEOUT = 60
 
 # Schema JSON pra forçar saída estruturada

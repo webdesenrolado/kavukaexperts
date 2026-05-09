@@ -3,7 +3,9 @@ import { db } from "@/db";
 import { candidates } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { IPIP_NEO_120_ITEMS } from "@/services/ipip-neo-120/src/items";
+import { BLOCKS as DISC_BLOCKS } from "@/services/disc-adapted/src/items";
 import { IpipForm } from "./form";
+import { DiscForm } from "./disc-form";
 
 export default async function AvaliarPage({
   params,
@@ -11,21 +13,21 @@ export default async function AvaliarPage({
   params: Promise<{ id: string; slug: string }>;
 }) {
   const { id, slug } = await params;
-  if (slug !== "ipip-neo-120") notFound();
 
   const candidate = await db.query.candidates.findFirst({ where: eq(candidates.id, id) });
   if (!candidate) notFound();
 
-  const items = IPIP_NEO_120_ITEMS.map((it) => ({
-    item_id: it.item_id,
-    text: it.text,
-  }));
+  if (slug === "ipip-neo-120") {
+    const items = IPIP_NEO_120_ITEMS.map((it) => ({
+      item_id: it.item_id,
+      text: it.text,
+    }));
+    return <IpipForm candidateId={id} candidateName={candidate.name} items={items} />;
+  }
 
-  return (
-    <IpipForm
-      candidateId={id}
-      candidateName={candidate.name}
-      items={items}
-    />
-  );
+  if (slug === "disc-adapted") {
+    return <DiscForm candidateId={id} candidateName={candidate.name} blocks={DISC_BLOCKS} />;
+  }
+
+  notFound();
 }

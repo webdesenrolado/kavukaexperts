@@ -8,6 +8,11 @@ import {
   INSTRUMENT_SLUG as IPIP_SLUG,
   INSTRUMENT_VERSION as IPIP_VERSION,
 } from "@/services/ipip-neo-120/src/index";
+import {
+  applyDiscAdapted,
+  INSTRUMENT_SLUG as DISC_SLUG,
+  INSTRUMENT_VERSION as DISC_VERSION,
+} from "@/services/disc-adapted/src/index";
 import type { ApplyInput } from "@/services/_contract/schema";
 import type { ApplicationResult } from "@/services/_contract/schema";
 
@@ -24,6 +29,11 @@ export const INSTRUMENTS: Record<string, InstrumentRegistration> = {
     slug: IPIP_SLUG,
     version: IPIP_VERSION,
     apply: applyIpipNeo120 as InstrumentApplyFn,
+  },
+  [DISC_SLUG]: {
+    slug: DISC_SLUG,
+    version: DISC_VERSION,
+    apply: applyDiscAdapted as InstrumentApplyFn,
   },
 };
 
