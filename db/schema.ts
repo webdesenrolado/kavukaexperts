@@ -1,18 +1,23 @@
 import { pgTable, text, integer, boolean, timestamp, unique } from "drizzle-orm/pg-core";
 
-// Empresas-cliente do ATS (multi-tenant)
+// Empresas — multi-tenant. kind='platform' (GUÉP) | 'client' (B2B contratante)
 export const companies = pgTable("companies", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   cnpj: text("cnpj"),
   industry: text("industry"),
   size: text("size"),
+  kind: text("kind").default("client"),
   address: text("address"),
   city: text("city"),
   state: text("state"),
   lat: text("lat"),
   lng: text("lng"),
   logoUrl: text("logo_url"),
+  contactName: text("contact_name"),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  notes: text("notes"),
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
 });
 
