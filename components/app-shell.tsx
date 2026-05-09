@@ -14,6 +14,7 @@ import {
   LogOut,
   Inbox,
   KanbanSquare,
+  Map as MapIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -28,6 +29,7 @@ const NAV: NavItem[] = [
   { href: "/vagas", label: "Vagas", icon: Briefcase },
   { href: "/kanban", label: "Kanban", icon: KanbanSquare },
   { href: "/candidatos", label: "Candidatos", icon: Users },
+  { href: "/mapa", label: "Mapa", icon: MapIcon },
   { href: "/avaliacoes", label: "Avaliações", icon: ClipboardList },
   { href: "/score-humano", label: "Score Humano", icon: BrainCircuit },
   { href: "/academy", label: "Academy", icon: GraduationCap },

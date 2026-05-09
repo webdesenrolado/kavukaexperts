@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean, timestamp, unique } from "drizzle-orm/pg-core";
 
 // Empresas-cliente do ATS (multi-tenant)
 export const companies = pgTable("companies", {
@@ -153,19 +153,25 @@ export const candidateLanguages = pgTable("candidate_languages", {
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
 });
 
-export const applications = pgTable("applications", {
-  id: text("id").primaryKey(),
-  jobId: text("job_id").notNull().references(() => jobs.id),
-  candidateId: text("candidate_id").notNull().references(() => candidates.id),
-  stage: text("stage").notNull().default("applied"),
-  source: text("source"),
-  scoreFit: integer("score_fit"),
-  scoreHumano: integer("score_humano"),
-  notes: text("notes"),
-  rejectionReason: text("rejection_reason"),
-  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
-  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
-});
+export const applications = pgTable(
+  "applications",
+  {
+    id: text("id").primaryKey(),
+    jobId: text("job_id").notNull().references(() => jobs.id),
+    candidateId: text("candidate_id").notNull().references(() => candidates.id),
+    stage: text("stage").notNull().default("applied"),
+    source: text("source"),
+    scoreFit: integer("score_fit"),
+    scoreHumano: integer("score_humano"),
+    notes: text("notes"),
+    rejectionReason: text("rejection_reason"),
+    createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+    updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
+  },
+  (t) => ({
+    candidateJobUq: unique("applications_candidate_job_uq").on(t.candidateId, t.jobId),
+  })
+);
 
 export const channels = pgTable("channels", {
   id: text("id").primaryKey(),
