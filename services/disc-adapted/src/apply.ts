@@ -25,19 +25,15 @@ export const INSTRUMENT_VERSION = "1.0.0" as const;
 function parseResponses(input: ApplyInput): DiscRawResponse[] {
   const out: DiscRawResponse[] = [];
   for (const r of input.responses) {
-    const id = r.item_id;
-    const value = r.value;
+    const id = String(r.item_id);
     // Aceita "B01-MOST"|"B01-LEAST"
     const m = /^(B\d{2})-(MOST|LEAST)$/i.exec(id);
     if (!m) continue;
     const blockId = m[1].toUpperCase();
     const pick = m[2].toLowerCase() as "most" | "least";
-    let letter: string | undefined;
-    if (typeof value === "string") {
-      letter = value.toLowerCase().trim();
-    }
+    const letter = String(r.value ?? "").toLowerCase().trim();
     if (letter !== "a" && letter !== "b" && letter !== "c" && letter !== "d") continue;
-    out.push({ block_id: blockId, pick, letter });
+    out.push({ block_id: blockId, pick, letter: letter as "a" | "b" | "c" | "d" });
   }
   return out;
 }
