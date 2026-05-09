@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { employees, companies } from "@/db/schema";
 import { and, eq, desc } from "drizzle-orm";
 import { requireSession } from "@/lib/auth/session";
+import { canAccessClientCompany } from "@/lib/auth/access";
 
 async function ensureClient(companyId: string) {
   const c = await db.query.companies.findFirst({
@@ -13,12 +14,16 @@ async function ensureClient(companyId: string) {
 }
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   if (!(await ensureClient(id))) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
@@ -31,12 +36,16 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
 }
 
 export async function POST(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   if (!(await ensureClient(id))) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { nr1Campaigns, nr1Invitations, employees } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireSession } from "@/lib/auth/session";
+import { canAccessClientCompany } from "@/lib/auth/access";
 import { appBaseUrl } from "@/lib/email/transport";
 
 /**
@@ -16,12 +17,16 @@ export async function POST(
   _req: NextRequest,
   ctx: { params: Promise<{ id: string; campaignId: string }> }
 ) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id, campaignId } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
 
   const campaign = await db.query.nr1Campaigns.findFirst({
     where: and(eq(nr1Campaigns.id, campaignId), eq(nr1Campaigns.companyId, id)),

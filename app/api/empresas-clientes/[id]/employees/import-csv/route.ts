@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { employees, companies } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireSession } from "@/lib/auth/session";
+import { canAccessClientCompany } from "@/lib/auth/access";
 
 /**
  * Import CSV de colaboradores.
@@ -61,12 +62,16 @@ function normalizeHeader(h: string): string {
 }
 
 export async function POST(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
 
   const company = await db.query.companies.findFirst({
     where: and(eq(companies.id, id), eq(companies.kind, "client")),

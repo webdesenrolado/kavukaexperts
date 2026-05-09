@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Building2, Users, Activity, MapPin, Mail, Phone, Hash } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { db } from "@/db";
-import { companies, employees, nr1Campaigns } from "@/db/schema";
+import { companies, employees, nr1Campaigns, users } from "@/db/schema";
 import { and, eq, count, desc } from "drizzle-orm";
+import { CriarAdminBox } from "./criar-admin-box";
 
 export const dynamic = "force-dynamic";
 
@@ -128,7 +129,7 @@ export default async function EmpresaDetalhe({
 
         {/* CTA principal — gerenciar colaboradores */}
         <div
-          className="rounded-xl border p-5 flex items-center justify-between gap-3"
+          className="rounded-xl border p-5 flex items-center justify-between gap-3 mb-3"
           style={{ borderColor: "var(--border)", background: "var(--card)" }}
         >
           <div>
@@ -145,6 +146,9 @@ export default async function EmpresaDetalhe({
             Abrir colaboradores
           </Link>
         </div>
+
+        {/* CTA admin de empresa */}
+        <CriarAdminBox companyId={id} companyName={company.name} />
       </div>
     </AppShell>
   );

@@ -3,17 +3,22 @@ import { db } from "@/db";
 import { nr1Campaigns, nr1Invitations, nr1Responses, employees } from "@/db/schema";
 import { and, eq, count, desc } from "drizzle-orm";
 import { requireSession } from "@/lib/auth/session";
+import { canAccessClientCompany } from "@/lib/auth/access";
 
 export async function GET(
   _req: NextRequest,
   ctx: { params: Promise<{ id: string; campaignId: string }> }
 ) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id, campaignId } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   const campaign = await db.query.nr1Campaigns.findFirst({
     where: and(eq(nr1Campaigns.id, campaignId), eq(nr1Campaigns.companyId, id)),
   });
@@ -41,12 +46,16 @@ export async function PATCH(
   request: NextRequest,
   ctx: { params: Promise<{ id: string; campaignId: string }> }
 ) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id, campaignId } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   const body = await request.json();
   const update: Record<string, unknown> = { updatedAt: new Date() };
   for (const k of ["name", "description", "status", "endsAt", "isAnonymous"]) {
@@ -64,12 +73,16 @@ export async function DELETE(
   _req: NextRequest,
   ctx: { params: Promise<{ id: string; campaignId: string }> }
 ) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id, campaignId } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   await db
     .delete(nr1Campaigns)
     .where(and(eq(nr1Campaigns.id, campaignId), eq(nr1Campaigns.companyId, id)));

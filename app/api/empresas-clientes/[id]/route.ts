@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { companies } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireSession } from "@/lib/auth/session";
+import { canAccessClientCompany, canManagePlatform } from "@/lib/auth/access";
 
 const EDITABLE = [
   "name", "cnpj", "industry", "size", "address", "city", "state",
@@ -10,12 +11,16 @@ const EDITABLE = [
 ] as const;
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   const c = await db.query.companies.findFirst({
     where: and(eq(companies.id, id), eq(companies.kind, "client")),
   });
@@ -24,12 +29,16 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   const body = await request.json();
   const update: Record<string, unknown> = {};
   for (const k of EDITABLE) if (k in body) update[k] = body[k] === "" ? null : body[k];
@@ -41,10 +50,15 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
 }
 
 export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  let session;
   try {
-    await requireSession();
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  }
+  // Apenas master/recruiter da plataforma pode deletar empresa cliente
+  if (!canManagePlatform(session)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
   const { id } = await ctx.params;
   await db.delete(companies).where(and(eq(companies.id, id), eq(companies.kind, "client")));

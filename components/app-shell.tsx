@@ -24,7 +24,7 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number }>;
 }
 
-const NAV: NavItem[] = [
+const NAV_PLATFORM: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: Inbox },
   { href: "/vagas", label: "Vagas", icon: Briefcase },
@@ -37,9 +37,16 @@ const NAV: NavItem[] = [
   { href: "/academy", label: "Academy", icon: GraduationCap },
 ];
 
+const NAV_COMPANY_ADMIN: NavItem[] = [
+  { href: "/empresa", label: "Visão geral", icon: LayoutDashboard },
+  { href: "/empresa/colaboradores", label: "Colaboradores", icon: Users },
+  { href: "/empresa/nr1", label: "Campanhas NR-1", icon: ClipboardList },
+];
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout, loading } = useAuth();
+  const NAV = user?.role === "company_admin" ? NAV_COMPANY_ADMIN : NAV_PLATFORM;
 
   return (
     <div className="min-h-screen flex">

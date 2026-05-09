@@ -25,7 +25,10 @@ export default function LoginPage() {
         return;
       }
       const params = new URLSearchParams(window.location.search);
-      window.location.href = params.get("from") || "/";
+      const from = params.get("from");
+      // company_admin sempre vai pra /empresa, mesmo que tenha vindo de outro from
+      const dest = data.role === "company_admin" ? "/empresa" : from || "/";
+      window.location.href = dest;
     } catch {
       setError("Erro de conexão");
     } finally {

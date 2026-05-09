@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { companies, nr1Campaigns } from "@/db/schema";
 import { and, eq, desc } from "drizzle-orm";
 import { requireSession } from "@/lib/auth/session";
+import { canAccessClientCompany } from "@/lib/auth/access";
 import { VERSION as QV } from "@/lib/nr1/questions";
 
 async function ensureClient(companyId: string) {
@@ -14,21 +15,25 @@ async function ensureClient(companyId: string) {
 }
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  let session;
   try {
-    const session = await requireSession();
-    const { id } = await ctx.params;
-    if (!(await ensureClient(id))) {
-      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
-    }
-    const list = await db
-      .select()
-      .from(nr1Campaigns)
-      .where(eq(nr1Campaigns.companyId, id))
-      .orderBy(desc(nr1Campaigns.createdAt));
-    return NextResponse.json({ campaigns: list });
+    session = await requireSession();
   } catch {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
+  const { id } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
+  if (!(await ensureClient(id))) {
+    return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+  }
+  const list = await db
+    .select()
+    .from(nr1Campaigns)
+    .where(eq(nr1Campaigns.companyId, id))
+    .orderBy(desc(nr1Campaigns.createdAt));
+  return NextResponse.json({ campaigns: list });
 }
 
 export async function POST(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -39,6 +44,9 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const { id } = await ctx.params;
+  if (!canAccessClientCompany(session, id)) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
   if (!(await ensureClient(id))) {
     return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   }
