@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import type { DiscBlock } from "@/services/disc-adapted/src/items";
+import { IntroScreen } from "./intro-screen";
 
 interface DiscFormProps {
   candidateId: string;
@@ -16,11 +17,16 @@ type Pick = "most" | "least";
 
 export function DiscForm({ candidateId, candidateName, blocks }: DiscFormProps) {
   const router = useRouter();
-  const startedAtRef = useRef<number>(Date.now());
-  // picks[blockId] = { most: 'a', least: 'b' }
+  const [phase, setPhase] = useState<"intro" | "form">("intro");
+  const startedAtRef = useRef<number>(0);
   const [picks, setPicks] = useState<Record<string, { most?: string; least?: string }>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  function start() {
+    setPhase("form");
+    startedAtRef.current = Date.now();
+  }
 
   const total = blocks.length;
   const completed = Object.values(picks).filter((p) => p.most && p.least).length;
@@ -34,14 +40,28 @@ export function DiscForm({ candidateId, candidateName, blocks }: DiscFormProps) 
 
   useEffect(() => {
     function before(e: BeforeUnloadEvent) {
-      if (completed > 0 && !allDone) {
+      if (phase === "form" && completed > 0 && !allDone) {
         e.preventDefault();
         e.returnValue = "";
       }
     }
     window.addEventListener("beforeunload", before);
     return () => window.removeEventListener("beforeunload", before);
-  }, [completed, allDone]);
+  }, [phase, completed, allDone]);
+
+  if (phase === "intro") {
+    return (
+      <IntroScreen
+        candidateId={candidateId}
+        candidateName={candidateName}
+        instrumentName="DISC adaptado · perfil comportamental"
+        itemsLabel="24 blocos com 4 alternativas cada"
+        durationLabel="10-15 minutos"
+        description="Em cada bloco você escolhe a frase que MAIS te descreve e a que MENOS te descreve."
+        onStart={start}
+      />
+    );
+  }
 
   function setPick(blockId: string, pick: Pick, letter: string) {
     setPicks((prev) => {

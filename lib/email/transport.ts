@@ -40,6 +40,14 @@ export type SendOptions = {
 };
 
 export async function sendEmail(opts: SendOptions): Promise<{ ok: boolean; reason?: string }> {
+  // Hard kill switch: NUNCA envia se EMAIL_DISABLED=true (modo testes).
+  if (process.env.EMAIL_DISABLED === "true") {
+    console.log("[email/disabled] EMAIL_DISABLED=true — descartando envio:");
+    console.log("  to:", opts.to);
+    console.log("  subject:", opts.subject);
+    return { ok: false, reason: "EMAIL_DISABLED" };
+  }
+
   const transport = getTransport();
   const from = emailFrom();
   if (!transport || !from) {

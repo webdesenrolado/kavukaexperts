@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send, Loader2 } from "lucide-react";
+import { IntroScreen } from "./intro-screen";
 
 interface Item {
   item_id: string;
@@ -28,12 +29,20 @@ const SCALE_COLORS = ["#ef4444", "#f97316", "#94a3b8", "#22c55e", "#10b981"];
 
 export function IpipForm({ candidateId, candidateName, items }: IpipFormProps) {
   const router = useRouter();
+  const [phase, setPhase] = useState<"intro" | "form">("intro");
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [responseTimes, setResponseTimes] = useState<Record<string, number>>({});
-  const startedAtRef = useRef<number>(Date.now());
-  const lastInteractionRef = useRef<number>(Date.now());
+  const startedAtRef = useRef<number>(0);
+  const lastInteractionRef = useRef<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  function start() {
+    setPhase("form");
+    const now = Date.now();
+    startedAtRef.current = now;
+    lastInteractionRef.current = now;
+  }
 
   const total = items.length;
   const answered = Object.keys(responses).length;
@@ -47,14 +56,28 @@ export function IpipForm({ candidateId, candidateName, items }: IpipFormProps) {
 
   useEffect(() => {
     function before(e: BeforeUnloadEvent) {
-      if (answered > 0 && !allDone) {
+      if (phase === "form" && answered > 0 && !allDone) {
         e.preventDefault();
         e.returnValue = "";
       }
     }
     window.addEventListener("beforeunload", before);
     return () => window.removeEventListener("beforeunload", before);
-  }, [answered, allDone]);
+  }, [phase, answered, allDone]);
+
+  if (phase === "intro") {
+    return (
+      <IntroScreen
+        candidateId={candidateId}
+        candidateName={candidateName}
+        instrumentName="IPIP-NEO-120 · Big Five (5 grandes traços)"
+        itemsLabel="120 afirmações em escala 1-5"
+        durationLabel="20-25 minutos"
+        description="Você vai indicar o quanto cada afirmação te descreve."
+        onStart={start}
+      />
+    );
+  }
 
   function setResponse(itemId: string, value: number) {
     const now = Date.now();
