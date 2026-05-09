@@ -16,12 +16,14 @@ export default async function PortalLoginPage({
         Acesse seu painel para manter seu currículo sempre atualizado.
       </p>
       <LoginClient redirectTo={from || "/portal/me"} />
-      <p className="text-xs opacity-60 mt-6 text-center">
-        Não tem conta?{" "}
-        <Link href="/portal/cadastro" className="underline hover:opacity-100 opacity-90">
-          Cadastre-se
+      <div className="flex items-center justify-between text-xs opacity-60 mt-6">
+        <Link href="/portal/recuperar" className="underline hover:opacity-100">
+          Esqueci a senha
         </Link>
-      </p>
+        <Link href="/portal/cadastro" className="underline hover:opacity-100">
+          Criar conta
+        </Link>
+      </div>
     </div>
   );
 }

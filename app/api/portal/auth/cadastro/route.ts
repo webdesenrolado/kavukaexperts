@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/auth/password";
 import { signCandidateToken } from "@/lib/portal/jwt";
 import { PORTAL_COOKIE, cookieSecure } from "@/lib/portal/session";
+import { sendEmail, appBaseUrl } from "@/lib/email/transport";
+import { welcomeEmail } from "@/lib/email/templates";
 
 export async function POST(request: NextRequest) {
   const { name, email, password, phone, consentLgpd } = await request.json();
@@ -66,6 +68,13 @@ export async function POST(request: NextRequest) {
   }
 
   const token = await signCandidateToken({ candidateId, email: emailNorm });
+
+  // Email de boas-vindas (não bloqueia o cadastro se SMTP falhar)
+  const tpl = welcomeEmail({ name: name.trim(), portalUrl: `${appBaseUrl()}/portal/me` });
+  sendEmail({ to: emailNorm, subject: tpl.subject, html: tpl.html, text: tpl.text }).catch((e) => {
+    console.error("[email/welcome] falha:", e);
+  });
+
   const response = NextResponse.json({ id: candidateId, name, email: emailNorm });
   response.cookies.set(PORTAL_COOKIE, token, {
     httpOnly: true,
