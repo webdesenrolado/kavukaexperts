@@ -4,8 +4,10 @@ import { candidates } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { IPIP_NEO_120_ITEMS } from "@/services/ipip-neo-120/src/items";
 import { BLOCKS as DISC_BLOCKS } from "@/services/disc-adapted/src/items";
+import { ITEMS as LABEL_ITEMS } from "@/services/label-adapted/src/items";
 import { IpipForm } from "./form";
 import { DiscForm } from "./disc-form";
+import { LabelForm } from "./label-form";
 
 export default async function AvaliarPage({
   params,
@@ -27,6 +29,10 @@ export default async function AvaliarPage({
 
   if (slug === "disc-adapted") {
     return <DiscForm candidateId={id} candidateName={candidate.name} blocks={DISC_BLOCKS} />;
+  }
+
+  if (slug === "label-adapted") {
+    return <LabelForm candidateId={id} candidateName={candidate.name} items={LABEL_ITEMS} />;
   }
 
   notFound();

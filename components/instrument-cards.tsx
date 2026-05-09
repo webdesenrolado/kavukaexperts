@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { RadarChart, type RadarAxis } from "./radar-chart";
 
 interface AssessmentRow {
   id: string;
@@ -18,7 +19,9 @@ const INSTRUMENT_META: Record<string, { name: string; layer: string; color: stri
   "bigfive-short":    { name: "Big Five curto (IPIP-50)", layer: "Camada 1 — Base",         color: "#ff8a3d", icon: "🧬" },
   "mbti-like":        { name: "MBTI-like (16 letras)",   layer: "Camada 1 — Base",          color: "#ff8a3d", icon: "🅻" },
   "disc-adapt":       { name: "DISC adaptado",            layer: "Camada 2 — Comportamento", color: "#0ea5e9", icon: "🎭" },
+  "disc-adapted":     { name: "DISC adaptado",            layer: "Camada 2 — Comportamento", color: "#0ea5e9", icon: "🎭" },
   "label-guep":       { name: "Label GUÉP",               layer: "Camada 2 — Comportamento", color: "#0ea5e9", icon: "🏷️" },
+  "label-adapted":    { name: "LABEL adaptado",           layer: "Camada 2 — Comportamento", color: "#0ea5e9", icon: "🏷️" },
   "gallup-adapt":     { name: "Gallup adaptado",          layer: "Camada 3 — Performance",   color: "#10b981", icon: "💪" },
   "dark-triad":       { name: "Dark Triad (Risco)",       layer: "Camada 4 — Risco",         color: "#a855f7", icon: "🌑" },
   "hogan-adapt":      { name: "Hogan HDS adaptado",       layer: "Camada 4 — Risco",         color: "#a855f7", icon: "⚠️" },
@@ -144,19 +147,29 @@ function InstrumentSummary({ instrument, scores }: { instrument: string; scores:
     return <div className="text-lg font-mono font-bold mt-1">{scores.type ?? "—"}</div>;
   }
 
-  if (instrument === "disc-adapt") {
+  if (instrument === "disc-adapt" || instrument === "disc-adapted") {
+    const profile = scores.profile ?? scores.dominant ?? "—";
     return (
       <div className="text-xs mt-1 opacity-80">
-        Perfil: <span className="font-mono font-bold">{scores.profile ?? "—"}</span>
+        Perfil: <span className="font-mono font-bold">{profile}</span>
       </div>
     );
   }
 
-  if (instrument === "label-guep") {
+  if (instrument === "label-guep" || instrument === "label-adapted") {
+    // LABEL adaptado: mostra os 3 fatores Big Five mais altos
+    const bf = scores.big_five || {};
+    const top = (Object.entries(bf) as [string, number][])
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([k]) => k);
     return (
-      <div className="text-xs mt-1 opacity-80">
-        <span className="font-bold text-[#0ea5e9]">{scores.label}</span>
-        {scores.secondary_label && <span className="opacity-60"> + {scores.secondary_label}</span>}
+      <div className="text-xs mt-1 opacity-80 flex gap-1">
+        {top.map((k) => (
+          <span key={k} className="font-mono px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10">
+            {k}
+          </span>
+        ))}
       </div>
     );
   }
@@ -247,12 +260,13 @@ function InstrumentDetail({ instrument, scores, color }: { instrument: string; s
     );
   }
 
-  if (instrument === "disc-adapt") {
+  if (instrument === "disc-adapt" || instrument === "disc-adapted") {
     const labels: Record<string, string> = { D: "Dominância", I: "Influência", S: "Estabilidade", C: "Conformidade" };
     return (
       <div className="space-y-2 pt-3">
         {(["D", "I", "S", "C"] as const).map((k) => {
-          const v = scores.scores?.[k] ?? 0;
+          // disc-adapt antigo guarda em scores.scores; disc-adapted guarda direto em scores
+          const v = scores[k] ?? scores.scores?.[k] ?? 0;
           return (
             <div key={k}>
               <div className="flex justify-between text-[10px] mb-1">
@@ -267,6 +281,10 @@ function InstrumentDetail({ instrument, scores, color }: { instrument: string; s
         })}
       </div>
     );
+  }
+
+  if (instrument === "label-adapted") {
+    return <LabelAdaptedDetail scores={scores} color={color} />;
   }
 
   if (instrument === "mbti-like") {
@@ -418,4 +436,92 @@ function InstrumentDetail({ instrument, scores, color }: { instrument: string; s
   }
 
   return null;
+}
+
+function LabelAdaptedDetail({ scores, color }: { scores: any; color: string }) {
+  const bf = scores?.big_five || {};
+  const dims = scores?.dimensions || {};
+
+  const BF_LABEL: Record<string, string> = {
+    O: "Abertura",
+    C: "Conscienciosidade",
+    E: "Extroversão",
+    A: "Afabilidade",
+    S: "Estabilidade emocional",
+  };
+  const DIM_LABEL: Record<string, string> = {
+    fragilidade: "Fragilidade",
+    estabilidade: "Estabilidade",
+    adaptabilidade: "Adaptabilidade",
+    metodo: "Método",
+    racionalidade: "Racionalidade",
+    motivacao: "Motivação",
+    combatividade: "Combatividade",
+    autoridade: "Autoridade",
+    expansividade: "Expansividade",
+    originalidade: "Originalidade",
+    sociabilidade: "Sociabilidade",
+    altruismo: "Altruísmo",
+    dependencia: "Dependência",
+  };
+  const RADAR_ORDER = [
+    "fragilidade", "estabilidade", "adaptabilidade", "metodo", "racionalidade",
+    "motivacao", "combatividade", "autoridade", "expansividade",
+    "originalidade", "sociabilidade", "altruismo", "dependencia",
+  ];
+  const NORMS: Record<string, { mean: number; sd: number }> = {
+    estabilidade: { mean: 3.0, sd: 0.7 },
+    adaptabilidade: { mean: 3.2, sd: 0.6 },
+    metodo: { mean: 3.1, sd: 0.7 },
+    racionalidade: { mean: 3.2, sd: 0.6 },
+    motivacao: { mean: 3.4, sd: 0.6 },
+    combatividade: { mean: 2.8, sd: 0.7 },
+    autoridade: { mean: 3.0, sd: 0.7 },
+    expansividade: { mean: 3.1, sd: 0.7 },
+    originalidade: { mean: 3.3, sd: 0.6 },
+    sociabilidade: { mean: 3.4, sd: 0.7 },
+    altruismo: { mean: 3.6, sd: 0.5 },
+    dependencia: { mean: 2.9, sd: 0.6 },
+    fragilidade: { mean: 3.0, sd: 0.7 },
+  };
+
+  const radarAxes: RadarAxis[] = RADAR_ORDER.map((k) => ({
+    key: k,
+    label: DIM_LABEL[k],
+    value: dims[k] ?? 3,
+    norm: NORMS[k]?.mean ?? 3,
+    sd: NORMS[k]?.sd ?? 0.7,
+  }));
+
+  return (
+    <div className="pt-4 space-y-5">
+      <div>
+        <div className="text-[10px] uppercase tracking-wider opacity-60 mb-2">Big Five</div>
+        <div className="space-y-1.5">
+          {(["O", "C", "E", "A", "S"] as const).map((k) => {
+            const v = typeof bf[k] === "number" ? bf[k] : 3;
+            const pct = ((v - 1) / 4) * 100;
+            return (
+              <div key={k}>
+                <div className="flex justify-between text-[10px] mb-1">
+                  <span>{BF_LABEL[k]}</span>
+                  <span className="opacity-60 font-mono">{v.toFixed(1)} / 5</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <div className="text-[10px] uppercase tracking-wider opacity-60 mb-2">
+          Como me apresentei — 13 dimensões
+        </div>
+        <RadarChart axes={radarAxes} size={460} fillColor={color} />
+      </div>
+    </div>
+  );
 }

@@ -13,6 +13,11 @@ import {
   INSTRUMENT_SLUG as DISC_SLUG,
   INSTRUMENT_VERSION as DISC_VERSION,
 } from "@/services/disc-adapted/src/index";
+import {
+  applyLabelAdapted,
+  INSTRUMENT_SLUG as LABEL_SLUG,
+  INSTRUMENT_VERSION as LABEL_VERSION,
+} from "@/services/label-adapted/src/index";
 import type { ApplyInput } from "@/services/_contract/schema";
 import type { ApplicationResult } from "@/services/_contract/schema";
 
@@ -34,6 +39,11 @@ export const INSTRUMENTS: Record<string, InstrumentRegistration> = {
     slug: DISC_SLUG,
     version: DISC_VERSION,
     apply: applyDiscAdapted as InstrumentApplyFn,
+  },
+  [LABEL_SLUG]: {
+    slug: LABEL_SLUG,
+    version: LABEL_VERSION,
+    apply: applyLabelAdapted as InstrumentApplyFn,
   },
 };
 
