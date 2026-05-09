@@ -115,11 +115,11 @@ export default async function EmpresaDetalhe({
               icon={<Activity size={14} />}
               label="Campanhas NR-1"
               value={campaigns.length.toString()}
-              href={`/empresas-clientes/${id}/colaboradores`}
+              href={`/empresas-clientes/${id}/nr1`}
               color="#10b981"
               sub={
                 campaigns.find((c) => c.status === "active")
-                  ? "1 ativa"
+                  ? `${campaigns.filter((c) => c.status === "active").length} ativa(s)`
                   : "Nenhuma ativa"
               }
             />
