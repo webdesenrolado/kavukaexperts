@@ -17,7 +17,9 @@
     "seed:inbox": "tsx scripts/seed-inbox.ts",
     "seed:vagas": "tsx scripts/seed-vagas-guep.ts",
     "extract:talentos": "python3 scripts/extract-csv-talentos.py",
+    "extract:deep": "python3 scripts/extract-deep-gemini.py",
     "import:talentos": "tsx scripts/import-talentos.ts",
+    "apply:deep": "tsx scripts/apply-deep-data.ts",
     "setup": "tsx scripts/setup.ts"
   },
   "dependencies": {
