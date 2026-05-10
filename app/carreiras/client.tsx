@@ -26,6 +26,11 @@ export function CarreirasClient({ jobs }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [accountResult, setAccountResult] = useState<{
+    activated: boolean;
+    alreadyExisted: boolean;
+    passwordMismatch: boolean;
+  } | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -38,6 +43,9 @@ export function CarreirasClient({ jobs }: Props) {
     expectedSalary: "",
     educationLevel: "",
     consent: false,
+    createAccount: true,
+    password: "",
+    passwordConfirm: "",
   });
 
   const selectedJob = jobs.find((j) => j.id === selectedJobId);
@@ -49,16 +57,28 @@ export function CarreirasClient({ jobs }: Props) {
       setError("Para se candidatar, aceite os termos LGPD.");
       return;
     }
+    if (form.createAccount) {
+      if (!form.password || form.password.length < 6) {
+        setError("Senha precisa ter ao menos 6 caracteres.");
+        return;
+      }
+      if (form.password !== form.passwordConfirm) {
+        setError("As senhas não conferem.");
+        return;
+      }
+    }
     setLoading(true);
     try {
+      const { passwordConfirm, createAccount, ...rest } = form;
       const res = await fetch("/api/public/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           jobId: selectedJobId,
-          ...form,
-          yearsExperience: form.yearsExperience ? parseInt(form.yearsExperience) : null,
-          expectedSalary: form.expectedSalary ? parseInt(form.expectedSalary) : null,
+          ...rest,
+          password: createAccount ? form.password : undefined,
+          yearsExperience: rest.yearsExperience ? parseInt(rest.yearsExperience) : null,
+          expectedSalary: rest.expectedSalary ? parseInt(rest.expectedSalary) : null,
         }),
       });
       const data = await res.json();
@@ -66,6 +86,7 @@ export function CarreirasClient({ jobs }: Props) {
         setError(data.error || "Não foi possível enviar a candidatura.");
         return;
       }
+      setAccountResult(data.account || null);
       setSubmitted(true);
       setTimeout(() => {
         document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
@@ -129,18 +150,88 @@ export function CarreirasClient({ jobs }: Props) {
         />
         <div className="max-w-4xl mx-auto relative">
           {submitted ? (
-            <div className="text-center py-10">
+            <div className="text-center py-10 max-w-2xl mx-auto">
               <CheckCircle2 size={64} className="mx-auto text-[#10b981] mb-5" />
               <h1 className="text-4xl md:text-5xl font-bold mb-3">Inscrição enviada 🎉</h1>
-              <p className="text-lg opacity-80 max-w-xl mx-auto leading-relaxed">
-                Você se candidatou para <strong>{selectedJob?.title}</strong>. Em breve, o time de RH
-                vai te chamar para a próxima etapa — onde sua <strong className="text-[#ff6a00]">KYID</strong>{" "}
-                começa a ser construída.
+              <p className="text-lg opacity-80 leading-relaxed">
+                Você se candidatou para <strong>{selectedJob?.title}</strong>.
               </p>
+
+              {accountResult?.activated && (
+                <div className="mt-8 p-6 rounded-2xl border border-[#ff6a00]/30 bg-gradient-to-br from-[#ff6a00]/10 to-[#ffcc00]/5 text-left">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles size={18} className="text-[#ff6a00]" />
+                    <h3 className="font-bold text-lg">
+                      {accountResult.alreadyExisted
+                        ? "Bem-vindo(a) de volta!"
+                        : "Conta criada · próximos passos"}
+                    </h3>
+                  </div>
+                  <p className="text-sm opacity-90 leading-relaxed mb-4">
+                    {accountResult.alreadyExisted
+                      ? "Você já tinha conta no portal. Entre agora pra acompanhar o processo."
+                      : "Sua conta no portal foi criada. Use ela pra:"}
+                  </p>
+                  {!accountResult.alreadyExisted && (
+                    <ul className="text-sm opacity-90 space-y-1.5 mb-5">
+                      <li>✓ Completar seu currículo (formação, experiência, skills, idiomas)</li>
+                      <li>✓ Fazer as avaliações comportamentais (LABEL, DISC, IPIP)</li>
+                      <li>
+                        ✓ Gerar sua <strong className="text-[#ff6a00]">Apostila ICH</strong> —
+                        sua identidade comportamental e de habilidades, portátil pra qualquer processo
+                      </li>
+                    </ul>
+                  )}
+                  <a
+                    href="/portal/me"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-black bg-gradient-to-r from-[#ff6a00] to-[#ffcc00] hover:opacity-90 shadow-xl"
+                  >
+                    <Fingerprint size={16} /> Acessar meu portal
+                  </a>
+                </div>
+              )}
+
+              {accountResult?.passwordMismatch && (
+                <div className="mt-6 p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-sm text-left">
+                  <strong className="text-yellow-400">Já existe uma conta com este email,</strong>{" "}
+                  mas a senha que você digitou não bateu. Sua candidatura foi registrada normalmente.
+                  Pra acompanhar, faça login no portal:
+                  <div className="mt-3">
+                    <a
+                      href="/portal/login"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-yellow-500/30 hover:bg-yellow-500/10 text-sm"
+                    >
+                      Entrar no portal
+                    </a>{" "}
+                    <a
+                      href="/portal/recuperar"
+                      className="ml-2 text-xs underline opacity-70 hover:opacity-100"
+                    >
+                      Esqueci a senha
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {!accountResult?.activated && !accountResult?.passwordMismatch && (
+                <p className="text-base opacity-70 mt-4">
+                  Em breve, o time de RH vai te chamar para a próxima etapa — onde sua{" "}
+                  <strong className="text-[#ff6a00]">KYID</strong> começa a ser construída.
+                </p>
+              )}
+
               <button
                 onClick={() => {
                   setSubmitted(false);
-                  setForm({ ...form, name: "", email: "", phone: "" });
+                  setAccountResult(null);
+                  setForm({
+                    ...form,
+                    name: "",
+                    email: "",
+                    phone: "",
+                    password: "",
+                    passwordConfirm: "",
+                  });
                 }}
                 className="mt-6 px-5 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 text-sm"
               >
@@ -359,6 +450,57 @@ export function CarreirasClient({ jobs }: Props) {
                         className="form-input"
                       />
                     </Field>
+                  </div>
+
+                  {/* Bloco: criar conta no portal */}
+                  <div className="rounded-xl border border-[#ff6a00]/30 bg-gradient-to-br from-[#ff6a00]/10 to-[#ffcc00]/5 p-5">
+                    <label className="flex items-start gap-3 cursor-pointer mb-3">
+                      <input
+                        type="checkbox"
+                        checked={form.createAccount}
+                        onChange={(e) => setForm({ ...form, createAccount: e.target.checked })}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 font-bold text-sm">
+                          <Sparkles size={14} className="text-[#ff6a00]" />
+                          Criar minha conta no portal Kavuka
+                        </div>
+                        <p className="opacity-80 text-xs mt-1 leading-relaxed">
+                          Recomendado. Com sua conta você completa o currículo, faz as avaliações
+                          comportamentais (LABEL, DISC, IPIP) e recebe sua{" "}
+                          <strong className="text-[#ff6a00]">Apostila ICH</strong> — sua
+                          identidade portátil pra qualquer processo seletivo.
+                        </p>
+                      </div>
+                    </label>
+
+                    {form.createAccount && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/10">
+                        <Field label="Senha (mín. 6) *">
+                          <input
+                            type="password"
+                            required={form.createAccount}
+                            minLength={6}
+                            autoComplete="new-password"
+                            value={form.password}
+                            onChange={(e) => setForm({ ...form, password: e.target.value })}
+                            className="form-input"
+                          />
+                        </Field>
+                        <Field label="Confirme a senha *">
+                          <input
+                            type="password"
+                            required={form.createAccount}
+                            minLength={6}
+                            autoComplete="new-password"
+                            value={form.passwordConfirm}
+                            onChange={(e) => setForm({ ...form, passwordConfirm: e.target.value })}
+                            className="form-input"
+                          />
+                        </Field>
+                      </div>
+                    )}
                   </div>
 
                   <label className="flex items-start gap-3 p-4 rounded-xl border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10">
