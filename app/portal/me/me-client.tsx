@@ -131,6 +131,13 @@ export function MeClient(props: {
             />
           </div>
         </div>
+        <a
+          href="/portal/me/apostila"
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+          style={{ borderColor: "var(--border)" }}
+        >
+          📄 Ver minha apostila ICH
+        </a>
       </div>
 
       {/* Tabs */}

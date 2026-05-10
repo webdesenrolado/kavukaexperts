@@ -280,6 +280,13 @@ export default async function CandidatoDetailPage({ params }: { params: Promise<
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/candidatos/${id}/apostila`}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+                style={{ borderColor: "var(--border)" }}
+              >
+                📄 Apostila ICH
+              </Link>
               <InviteButton candidateId={id} candidateName={candidate.name} />
             </div>
           </div>
