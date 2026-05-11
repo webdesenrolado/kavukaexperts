@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { PublicJob } from "./page";
 import { REMOTE_LABEL, SENIORITY_LABEL, EMPLOYMENT_TYPE_LABEL, EDUCATION_LABEL } from "@/lib/labels";
+import { Select } from "@/components/select";
 
 interface Props {
   jobs: PublicJob[];
@@ -350,18 +351,15 @@ export function CarreirasClient({ jobs }: Props) {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Vaga */}
                   <Field label="Vaga *">
-                    <select
+                    <Select
                       value={selectedJobId}
-                      onChange={(e) => setSelectedJobId(e.target.value)}
-                      required
-                      className="form-input"
-                    >
-                      {jobs.map((j) => (
-                        <option key={j.id} value={j.id}>
-                          {j.title}{j.location ? ` — ${j.location}` : ""}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={setSelectedJobId}
+                      options={jobs.map((j) => ({
+                        value: j.id,
+                        label: j.title,
+                        hint: j.location ?? undefined,
+                      }))}
+                    />
                   </Field>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -431,16 +429,18 @@ export function CarreirasClient({ jobs }: Props) {
                       />
                     </Field>
                     <Field label="Escolaridade">
-                      <select
+                      <Select
                         value={form.educationLevel}
-                        onChange={(e) => setForm({ ...form, educationLevel: e.target.value })}
-                        className="form-input"
-                      >
-                        <option value="">Selecione</option>
-                        {Object.entries(EDUCATION_LABEL).map(([k, v]) => (
-                          <option key={k} value={k}>{v}</option>
-                        ))}
-                      </select>
+                        onChange={(v) => setForm({ ...form, educationLevel: v })}
+                        placeholder="Selecione"
+                        options={[
+                          { value: "", label: "Não informar" },
+                          ...Object.entries(EDUCATION_LABEL).map(([k, v]) => ({
+                            value: k,
+                            label: v,
+                          })),
+                        ]}
+                      />
                     </Field>
                     <Field label="LinkedIn">
                       <input

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ANCHORS, DIMENSIONS, type NR1Question } from "@/lib/nr1/questions";
+import { Select } from "@/components/select";
 
 const PROGRESS_MIN = 0.05;
 
@@ -302,27 +303,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Select({
-  value,
-  onChange,
-  options,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full px-3 py-2 rounded-md border bg-transparent text-sm"
-      style={{ borderColor: "var(--border)" }}
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value} style={{ background: "var(--background)" }}>
-          {o.label}
-        </option>
-      ))}
-    </select>
-  );
-}

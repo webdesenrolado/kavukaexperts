@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
+import { Select } from "@/components/select";
 
 const ASSESSMENTS = [
   { slug: "ipip-neo-120", name: "IPIP-NEO-120 (120 itens, 30 facetas)", layer: "Camada 1 — Base", recommended: true, available: true },
@@ -115,15 +116,15 @@ export default function NovaVagaPage() {
                 />
               </Field>
               <Field label="Modalidade">
-                <select
+                <Select
                   value={form.remote}
-                  onChange={(e) => setForm({ ...form, remote: e.target.value })}
-                  className="input"
-                >
-                  <option value="on_site">Presencial</option>
-                  <option value="hybrid">Híbrido</option>
-                  <option value="remote">100% remoto</option>
-                </select>
+                  onChange={(v) => setForm({ ...form, remote: v })}
+                  options={[
+                    { value: "on_site", label: "Presencial" },
+                    { value: "hybrid", label: "Híbrido" },
+                    { value: "remote", label: "100% remoto" },
+                  ]}
+                />
               </Field>
             </div>
           </Section>
@@ -131,29 +132,29 @@ export default function NovaVagaPage() {
           <Section title="Detalhes contratuais">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Vínculo">
-                <select
+                <Select
                   value={form.employmentType}
-                  onChange={(e) => setForm({ ...form, employmentType: e.target.value })}
-                  className="input"
-                >
-                  <option value="clt">CLT</option>
-                  <option value="pj">PJ</option>
-                  <option value="freelance">Freelance</option>
-                  <option value="internship">Estágio</option>
-                </select>
+                  onChange={(v) => setForm({ ...form, employmentType: v })}
+                  options={[
+                    { value: "clt", label: "CLT" },
+                    { value: "pj", label: "PJ" },
+                    { value: "freelance", label: "Freelance" },
+                    { value: "internship", label: "Estágio" },
+                  ]}
+                />
               </Field>
               <Field label="Senioridade">
-                <select
+                <Select
                   value={form.seniority}
-                  onChange={(e) => setForm({ ...form, seniority: e.target.value })}
-                  className="input"
-                >
-                  <option value="junior">Júnior</option>
-                  <option value="pleno">Pleno</option>
-                  <option value="senior">Sênior</option>
-                  <option value="especialista">Especialista</option>
-                  <option value="lideranca">Liderança</option>
-                </select>
+                  onChange={(v) => setForm({ ...form, seniority: v })}
+                  options={[
+                    { value: "junior", label: "Júnior" },
+                    { value: "pleno", label: "Pleno" },
+                    { value: "senior", label: "Sênior" },
+                    { value: "especialista", label: "Especialista" },
+                    { value: "lideranca", label: "Liderança" },
+                  ]}
+                />
               </Field>
               <Field label="Faixa salarial (R$)">
                 <div className="flex gap-2">

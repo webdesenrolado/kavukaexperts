@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { ArrowLeft, Save, ShieldCheck } from "lucide-react";
+import { Select } from "@/components/select";
 
 export default function NovoCandidatoPage() {
   const router = useRouter();
@@ -135,18 +136,18 @@ export default function NovoCandidatoPage() {
                 />
               </Field>
               <Field label="Origem">
-                <select
+                <Select
                   value={form.source}
-                  onChange={(e) => setForm({ ...form, source: e.target.value })}
-                  className="input"
-                >
-                  <option value="manual">Manual</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="web">Site (link público)</option>
-                  <option value="indicacao">Indicação</option>
-                  <option value="linkedin">LinkedIn</option>
-                  <option value="importado">Importação</option>
-                </select>
+                  onChange={(v) => setForm({ ...form, source: v })}
+                  options={[
+                    { value: "manual", label: "Manual" },
+                    { value: "whatsapp", label: "WhatsApp" },
+                    { value: "web", label: "Site (link público)" },
+                    { value: "indicacao", label: "Indicação" },
+                    { value: "linkedin", label: "LinkedIn" },
+                    { value: "importado", label: "Importação" },
+                  ]}
+                />
               </Field>
             </div>
           </Section>
