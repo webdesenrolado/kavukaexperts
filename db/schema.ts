@@ -148,6 +148,18 @@ export const candidateSkills = pgTable("candidate_skills", {
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
 });
 
+export const candidateLinks = pgTable("candidate_links", {
+  id: text("id").primaryKey(),
+  candidateId: text("candidate_id").notNull().references(() => candidates.id, { onDelete: "cascade" }),
+  /** Tipo do link: linkedin, github, portfolio, behance, dribbble, figma, instagram, twitter, youtube, medium, artstation, custom */
+  kind: text("kind").notNull(),
+  /** Label customizado (quando kind=custom) ou override do default */
+  label: text("label"),
+  url: text("url").notNull(),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+});
+
 export const candidateLanguages = pgTable("candidate_languages", {
   id: text("id").primaryKey(),
   candidateId: text("candidate_id").notNull().references(() => candidates.id, { onDelete: "cascade" }),

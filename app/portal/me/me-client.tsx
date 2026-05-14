@@ -94,12 +94,69 @@ type AssessmentSummary = {
   completedAt: string | Date | null;
 };
 
+type CandidateLink = {
+  id: string;
+  kind: string;
+  label: string | null;
+  url: string;
+  sortOrder: number | null;
+};
+
+interface LinkPreset {
+  kind: string;
+  label: string;
+  placeholder: string;
+  group: "essencial" | "dev" | "design" | "conteudo" | "musica" | "outro";
+  icon: string;
+}
+
+const LINK_PRESETS: LinkPreset[] = [
+  // Essencial
+  { kind: "portfolio", label: "Portfolio / Site pessoal", placeholder: "https://seusite.com", group: "essencial", icon: "🌐" },
+  { kind: "website", label: "Site / Blog", placeholder: "https://...", group: "essencial", icon: "🔗" },
+  // Dev
+  { kind: "github", label: "GitHub", placeholder: "https://github.com/usuario", group: "dev", icon: "💻" },
+  { kind: "stackoverflow", label: "Stack Overflow", placeholder: "https://stackoverflow.com/users/...", group: "dev", icon: "📚" },
+  { kind: "kaggle", label: "Kaggle", placeholder: "https://kaggle.com/usuario", group: "dev", icon: "📊" },
+  { kind: "huggingface", label: "Hugging Face", placeholder: "https://huggingface.co/usuario", group: "dev", icon: "🤗" },
+  // Design
+  { kind: "behance", label: "Behance", placeholder: "https://behance.net/usuario", group: "design", icon: "🎨" },
+  { kind: "dribbble", label: "Dribbble", placeholder: "https://dribbble.com/usuario", group: "design", icon: "🏀" },
+  { kind: "figma", label: "Figma", placeholder: "https://figma.com/@usuario", group: "design", icon: "🟪" },
+  { kind: "artstation", label: "ArtStation", placeholder: "https://artstation.com/usuario", group: "design", icon: "🖼️" },
+  // Conteúdo
+  { kind: "instagram", label: "Instagram", placeholder: "https://instagram.com/usuario", group: "conteudo", icon: "📷" },
+  { kind: "twitter", label: "X / Twitter", placeholder: "https://x.com/usuario", group: "conteudo", icon: "𝕏" },
+  { kind: "youtube", label: "YouTube", placeholder: "https://youtube.com/@canal", group: "conteudo", icon: "▶️" },
+  { kind: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@usuario", group: "conteudo", icon: "🎵" },
+  { kind: "medium", label: "Medium", placeholder: "https://medium.com/@usuario", group: "conteudo", icon: "📝" },
+  { kind: "twitch", label: "Twitch", placeholder: "https://twitch.tv/usuario", group: "conteudo", icon: "🎮" },
+  { kind: "vimeo", label: "Vimeo", placeholder: "https://vimeo.com/usuario", group: "conteudo", icon: "🎬" },
+  // Música
+  { kind: "spotify", label: "Spotify", placeholder: "https://open.spotify.com/artist/...", group: "musica", icon: "🎧" },
+  { kind: "soundcloud", label: "SoundCloud", placeholder: "https://soundcloud.com/usuario", group: "musica", icon: "🔊" },
+];
+
+const PRESET_BY_KIND: Record<string, LinkPreset> = Object.fromEntries(
+  LINK_PRESETS.map((p) => [p.kind, p])
+);
+
+const GROUP_LABEL: Record<LinkPreset["group"], string> = {
+  essencial: "Site / Portfolio",
+  dev: "Desenvolvimento",
+  design: "Design / Arte visual",
+  conteudo: "Conteúdo / Social",
+  musica: "Música / Áudio",
+  outro: "Outro",
+};
+
 export function MeClient(props: {
   initialCandidate: Candidate;
   initialExperiences: Experience[];
   initialEducations: Education[];
   initialSkills: Skill[];
   initialLanguages: Language[];
+  initialLinks?: CandidateLink[];
   initialAssessments?: AssessmentSummary[];
 }) {
   const router = useRouter();
@@ -109,6 +166,7 @@ export function MeClient(props: {
   const [educations, setEducations] = useState<Education[]>(props.initialEducations);
   const [skills, setSkills] = useState<Skill[]>(props.initialSkills);
   const [languages, setLanguages] = useState<Language[]>(props.initialLanguages);
+  const [links, setLinks] = useState<CandidateLink[]>(props.initialLinks || []);
   const assessments = props.initialAssessments || [];
 
   const completeness = computeCompleteness({ candidate, experiences, educations, skills, languages });
@@ -169,6 +227,8 @@ export function MeClient(props: {
       {tab === "perfil" && (
         <PerfilTab
           candidate={candidate}
+          links={links}
+          setLinks={setLinks}
           onSave={(c) => setCandidate({ ...candidate, ...c })}
           onLogout={async () => {
             await fetch("/api/portal/auth/logout", { method: "POST" });
@@ -398,10 +458,14 @@ function computeCompleteness(d: {
 // ========= PERFIL =========
 function PerfilTab({
   candidate,
+  links,
+  setLinks,
   onSave,
   onLogout,
 }: {
   candidate: Candidate;
+  links: CandidateLink[];
+  setLinks: (l: CandidateLink[]) => void;
   onSave: (c: Partial<Candidate>) => void;
   onLogout: () => void;
 }) {
@@ -585,28 +649,44 @@ function PerfilTab({
         </FieldRow>
       </FormSection>
 
-      <FormSection title="Links">
-        <Field label="LinkedIn">
+      <FormSection title="Links e portfólio">
+        {/* LinkedIn em destaque */}
+        <div
+          className="rounded-xl p-4 border-2"
+          style={{
+            borderColor: form.linkedinUrl ? "#10b981" : "#0a66c2",
+            background: form.linkedinUrl
+              ? "rgba(16,185,129,0.06)"
+              : "rgba(10,102,194,0.08)",
+          }}
+        >
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">💼</span>
+              <span className="font-bold text-sm">LinkedIn</span>
+              <span
+                className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+                style={{ background: "#0a66c2", color: "white" }}
+              >
+                Recomendado
+              </span>
+            </div>
+            {form.linkedinUrl && <span className="text-xs text-[#10b981]">✓ preenchido</span>}
+          </div>
+          <p className="text-xs opacity-70 mb-2 leading-snug">
+            É o link mais consultado por recrutadores. Mesmo que você não use ativamente,
+            cole sua URL aqui.
+          </p>
           <Input
             value={form.linkedinUrl ?? ""}
             onChange={(v) => set("linkedinUrl", v)}
             placeholder="https://linkedin.com/in/seu-usuario"
           />
-        </Field>
-        <Field label="GitHub">
-          <Input
-            value={form.githubUrl ?? ""}
-            onChange={(v) => set("githubUrl", v)}
-            placeholder="https://github.com/seu-usuario"
-          />
-        </Field>
-        <Field label="Portfolio / site">
-          <Input
-            value={form.portfolioUrl ?? ""}
-            onChange={(v) => set("portfolioUrl", v)}
-            placeholder="https://seusite.com"
-          />
-        </Field>
+        </div>
+
+        {/* Lista de links extras + Adicionar */}
+        <LinksManager links={links} setLinks={setLinks} role={form.currentRole} />
+      </FormSection>
       </FormSection>
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -1212,6 +1292,327 @@ function LanguagesTab({ items, setItems }: { items: Language[]; setItems: (i: La
         </div>
       )}
     </div>
+  );
+}
+
+// ========= LINKS MANAGER =========
+function LinksManager({
+  links,
+  setLinks,
+  role,
+}: {
+  links: CandidateLink[];
+  setLinks: (l: CandidateLink[]) => void;
+  role: string | null;
+}) {
+  const [showAdd, setShowAdd] = useState(false);
+
+  async function removeLink(id: string) {
+    if (!confirm("Remover este link?")) return;
+    const res = await fetch(`/api/portal/me/links/${id}`, { method: "DELETE" });
+    if (res.ok) setLinks(links.filter((l) => l.id !== id));
+  }
+
+  // Sugestão de grupo com base no cargo
+  const roleLower = (role || "").toLowerCase();
+  let suggestion: LinkPreset["group"] | null = null;
+  if (/dev|engineer|programa|backend|frontend|fullstack|sre|devops|dados|data/.test(roleLower)) {
+    suggestion = "dev";
+  } else if (/design|ux|ui|art|criativ|motion|ilustra/.test(roleLower)) {
+    suggestion = "design";
+  } else if (/conteúd|conteud|market|jornali|redator|social media|influen/.test(roleLower)) {
+    suggestion = "conteudo";
+  } else if (/music|audio|som|produtor/.test(roleLower)) {
+    suggestion = "musica";
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Banner sugestões */}
+      {suggestion && (
+        <div
+          className="rounded-lg border p-3 text-xs"
+          style={{
+            borderColor: "var(--border)",
+            background: "linear-gradient(135deg, rgba(168,85,247,0.08), rgba(236,72,153,0.04))",
+          }}
+        >
+          <div className="font-semibold mb-1">
+            💡 Pra {suggestion === "dev" ? "desenvolvedor" : suggestion === "design" ? "designer" : suggestion === "conteudo" ? "criador de conteúdo" : "músico"}: links que pesam
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {LINK_PRESETS.filter((p) => p.group === suggestion).map((p) => (
+              <span
+                key={p.kind}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border opacity-80"
+                style={{ borderColor: "var(--border)" }}
+              >
+                {p.icon} {p.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Lista de links cadastrados */}
+      {links.length > 0 && (
+        <div className="space-y-1.5">
+          {links.map((l) => {
+            const preset = PRESET_BY_KIND[l.kind];
+            return (
+              <div
+                key={l.id}
+                className="border rounded-lg px-3 py-2 flex items-center gap-3"
+                style={{ borderColor: "var(--border)", background: "var(--card)" }}
+              >
+                <span className="text-lg shrink-0">{preset?.icon || "🔗"}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-semibold">
+                    {l.label || preset?.label || l.kind}
+                  </div>
+                  <a
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] opacity-70 hover:opacity-100 hover:underline truncate block font-mono"
+                  >
+                    {l.url}
+                  </a>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeLink(l.id)}
+                  className="w-7 h-7 rounded-md hover:bg-red-500/10 hover:text-red-500 flex items-center justify-center text-xs opacity-60"
+                  title="Remover"
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Botão adicionar */}
+      <button
+        type="button"
+        onClick={() => setShowAdd(true)}
+        className="w-full py-2.5 rounded-lg border border-dashed text-sm flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5"
+        style={{ borderColor: "var(--border)" }}
+      >
+        + Adicionar link (portfolio, GitHub, Behance, Instagram, X, YouTube…)
+      </button>
+
+      {showAdd && (
+        <AddLinkModal
+          existingKinds={new Set(links.map((l) => l.kind))}
+          onClose={() => setShowAdd(false)}
+          onAdded={(added) => {
+            setLinks([...links, added]);
+            setShowAdd(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddLinkModal({
+  existingKinds,
+  onClose,
+  onAdded,
+}: {
+  existingKinds: Set<string>;
+  onClose: () => void;
+  onAdded: (l: CandidateLink) => void;
+}) {
+  const [step, setStep] = useState<"choose" | "url">("choose");
+  const [preset, setPreset] = useState<LinkPreset | null>(null);
+  const [url, setUrl] = useState("");
+  const [customLabel, setCustomLabel] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  function choose(p: LinkPreset) {
+    setPreset(p);
+    setStep("url");
+    setUrl("");
+    setErr(null);
+  }
+
+  function chooseCustom() {
+    setPreset({
+      kind: "custom",
+      label: "",
+      placeholder: "https://...",
+      group: "outro",
+      icon: "🔗",
+    });
+    setStep("url");
+    setUrl("");
+    setCustomLabel("");
+    setErr(null);
+  }
+
+  async function save() {
+    if (!preset) return;
+    if (!url.trim()) {
+      setErr("Cole a URL completa");
+      return;
+    }
+    if (preset.kind === "custom" && !customLabel.trim()) {
+      setErr("Dê um nome pro link");
+      return;
+    }
+    setBusy(true);
+    setErr(null);
+    try {
+      const body: any = { kind: preset.kind, url: url.trim() };
+      if (preset.kind === "custom") body.label = customLabel.trim();
+      const res = await fetch("/api/portal/me/links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setErr(j.error || "Falha ao salvar");
+        return;
+      }
+      const j = await res.json();
+      onAdded({
+        id: j.id,
+        kind: preset.kind,
+        label: preset.kind === "custom" ? customLabel : null,
+        url: url.trim(),
+        sortOrder: 0,
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Agrupa presets por grupo
+  const groups = Array.from(new Set(LINK_PRESETS.map((p) => p.group))) as LinkPreset["group"][];
+
+  return (
+    <Modal title="Adicionar link" onClose={onClose}>
+      {step === "choose" ? (
+        <div className="space-y-4">
+          <p className="text-xs opacity-70 leading-relaxed">
+            Escolha o tipo de link. Você pode adicionar quantos quiser. LinkedIn já tem
+            campo próprio destacado.
+          </p>
+          {groups.map((g) => (
+            <div key={g}>
+              <div className="text-[10px] uppercase tracking-wider opacity-60 mb-2">
+                {GROUP_LABEL[g]}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {LINK_PRESETS.filter((p) => p.group === g).map((p) => {
+                  const used = existingKinds.has(p.kind);
+                  return (
+                    <button
+                      key={p.kind}
+                      type="button"
+                      onClick={() => choose(p)}
+                      className="text-left px-3 py-2 rounded-lg border text-xs flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/5"
+                      style={{
+                        borderColor: used ? "rgba(16,185,129,0.4)" : "var(--border)",
+                        background: used ? "rgba(16,185,129,0.06)" : "transparent",
+                      }}
+                    >
+                      <span className="text-base">{p.icon}</span>
+                      <span className="flex-1 truncate">{p.label}</span>
+                      {used && <span className="text-[9px] text-[#10b981]">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          <div>
+            <div className="text-[10px] uppercase tracking-wider opacity-60 mb-2">
+              {GROUP_LABEL.outro}
+            </div>
+            <button
+              type="button"
+              onClick={chooseCustom}
+              className="w-full text-left px-3 py-2 rounded-lg border border-dashed text-xs flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ borderColor: "var(--border)" }}
+            >
+              <span className="text-base">🔗</span>
+              <span>Outro link customizado</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setStep("choose")}
+            className="text-xs opacity-70 hover:opacity-100 inline-flex items-center gap-1"
+          >
+            ← Voltar
+          </button>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-xl">{preset?.icon}</span>
+            <strong>{preset?.kind === "custom" ? "Link customizado" : preset?.label}</strong>
+          </div>
+          {preset?.kind === "custom" && (
+            <div>
+              <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1">
+                Nome do link
+              </label>
+              <input
+                value={customLabel}
+                onChange={(e) => setCustomLabel(e.target.value)}
+                placeholder="ex: Meu blog pessoal"
+                className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm"
+                style={{ borderColor: "var(--border)" }}
+              />
+            </div>
+          )}
+          <div>
+            <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1">
+              URL (cole o endereço completo)
+            </label>
+            <input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder={preset?.placeholder}
+              className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm font-mono"
+              style={{ borderColor: "var(--border)" }}
+              autoFocus
+            />
+          </div>
+          {err && (
+            <div className="text-sm text-red-500 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+              {err}
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg border text-sm"
+              style={{ borderColor: "var(--border)" }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              disabled={busy}
+              className="px-5 py-2 rounded-lg font-bold text-black disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
+            >
+              {busy ? "Salvando..." : "Adicionar"}
+            </button>
+          </div>
+        </div>
+      )}
+    </Modal>
   );
 }
 
