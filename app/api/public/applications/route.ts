@@ -5,7 +5,7 @@
  *
  * Se `password` for enviado, ativa conta no portal do candidato e seta o cookie
  * kavuka_candidate_token (auto-login). O candidato então pode ir direto pro
- * /portal/me completar perfil e fazer avaliações pra gerar a Apostila ICH.
+ * /portal/me completar perfil e fazer avaliações pra gerar a Currículo ICH.
  */
 
 import { NextRequest, NextResponse } from "next/server";

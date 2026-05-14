@@ -178,7 +178,7 @@ export function CarreirasClient({ jobs }: Props) {
                       <li>✓ Completar seu currículo (formação, experiência, skills, idiomas)</li>
                       <li>✓ Fazer as avaliações comportamentais (LABEL, DISC, IPIP)</li>
                       <li>
-                        ✓ Gerar sua <strong className="text-[#ff6a00]">Apostila ICH</strong> —
+                        ✓ Gerar sua <strong className="text-[#ff6a00]">Currículo ICH</strong> —
                         sua identidade comportamental e de habilidades, portátil pra qualquer processo
                       </li>
                     </ul>
@@ -469,7 +469,7 @@ export function CarreirasClient({ jobs }: Props) {
                         <p className="opacity-80 text-xs mt-1 leading-relaxed">
                           Recomendado. Com sua conta você completa o currículo, faz as avaliações
                           comportamentais (LABEL, DISC, IPIP) e recebe sua{" "}
-                          <strong className="text-[#ff6a00]">Apostila ICH</strong> — sua
+                          <strong className="text-[#ff6a00]">Currículo ICH</strong> — sua
                           identidade portátil pra qualquer processo seletivo.
                         </p>
                       </div>

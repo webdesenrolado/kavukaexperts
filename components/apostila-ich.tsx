@@ -93,7 +93,7 @@ interface Props {
   baseUrl: string;
 }
 
-export function ApostilaICH(props: Props) {
+export function CurriculoICH(props: Props) {
   const {
     candidate,
     experiences,
@@ -148,7 +148,7 @@ export function ApostilaICH(props: Props) {
       >
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="text-xs opacity-70">
-            <strong>Apostila ICH</strong> · {candidate.name}
+            <strong>Currículo ICH</strong> · {candidate.name}
           </div>
           <button
             onClick={handlePrint}
@@ -411,7 +411,7 @@ export function ApostilaICH(props: Props) {
           style={{ borderColor: "#ddd" }}
         >
           <p>
-            Apostila ICH gerada por <strong>Kavuka Experts</strong> · Plataforma da GUÉP Soluções
+            Currículo ICH gerada por <strong>Kavuka Experts</strong> · Plataforma da GUÉP Soluções
             Corporativas
           </p>
           <p className="mt-1">

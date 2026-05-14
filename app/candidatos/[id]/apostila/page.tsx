@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { loadApostilaData } from "@/lib/ich/loader";
-import { ApostilaICH } from "@/components/apostila-ich";
+import { CurriculoICH } from "@/components/apostila-ich";
 import { appBaseUrl } from "@/lib/email/transport";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Apostila ICH — Kavuka Experts" };
+export const metadata = { title: "Currículo ICH — Kavuka Experts" };
 
 export default async function ApostilaCandidatoPage({
   params,
@@ -16,7 +16,7 @@ export default async function ApostilaCandidatoPage({
   if (!data) notFound();
 
   return (
-    <ApostilaICH
+    <CurriculoICH
       candidate={data.candidate as any}
       experiences={data.experiences as any}
       educations={data.educations as any}

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Select } from "@/components/select";
+import { AvatarUploader } from "./avatar-uploader";
 
 type Candidate = {
   id: string;
@@ -181,10 +182,19 @@ export function MeClient(props: {
           background: "linear-gradient(135deg, rgba(255,106,0,0.08), rgba(255,204,0,0.02))",
         }}
       >
-        <h1 className="text-2xl font-bold">Olá, {candidate.name?.split(" ")[0]} 👋</h1>
-        <p className="text-sm opacity-80 mt-1">
-          Quanto mais completo seu perfil, mais relevante você fica para vagas alinhadas ao seu objetivo.
-        </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
+          <div className="flex-1 min-w-[200px]">
+            <h1 className="text-2xl font-bold">Olá, {candidate.name?.split(" ")[0]} 👋</h1>
+            <p className="text-sm opacity-80 mt-1">
+              Quanto mais completo seu perfil, mais relevante você fica para vagas alinhadas ao seu objetivo.
+            </p>
+          </div>
+          <AvatarUploader
+            initialAvatar={candidate.avatarUrl}
+            candidateName={candidate.name}
+            onChange={(url) => setCandidate({ ...candidate, avatarUrl: url })}
+          />
+        </div>
         <div className="mt-4">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="opacity-70">Currículo {completeness}% completo</span>
@@ -205,7 +215,7 @@ export function MeClient(props: {
           className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
           style={{ borderColor: "var(--border)" }}
         >
-          📄 Ver minha apostila ICH
+          📄 Ver minha currículo ICH
         </a>
       </div>
 
@@ -321,7 +331,7 @@ function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
             <p className="text-sm opacity-80 leading-relaxed">
               Cada instrumento mede uma dimensão diferente de quem você é. Combinados,
               eles geram seu <strong>Índice Comportamental</strong> e alimentam sua{" "}
-              <strong className="text-[#ff6a00]">Apostila ICH</strong> com profundidade
+              <strong className="text-[#ff6a00]">Currículo ICH</strong> com profundidade
               real. Você pode refazer a qualquer momento.
             </p>
           </div>
@@ -403,7 +413,7 @@ function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
         style={{ borderColor: "var(--border)", background: "var(--card)" }}
       >
         <div>
-          <div className="font-semibold text-sm">Sua Apostila ICH</div>
+          <div className="font-semibold text-sm">Seu Currículo ICH</div>
           <div className="text-xs opacity-70 mt-0.5">
             {done === 0
               ? "Faça pelo menos 1 avaliação pra começar a alimentar sua KYID."
