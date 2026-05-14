@@ -369,11 +369,19 @@ function computeCompleteness(d: {
   skills: Skill[];
   languages: Language[];
 }) {
+  // Conta SÓ campos que o candidato preenche depois do cadastro.
+  // Nome, email e telefone vêm do cadastro inicial — não contam.
   let pts = 0, total = 0;
   const c = d.candidate;
   const fields = [
-    c.name, c.email, c.phone, c.cpf, c.birthDate, c.cep,
-    c.address, c.city, c.state, c.summary, c.linkedinUrl,
+    c.cpf,
+    c.birthDate,
+    c.cep,
+    c.address,
+    c.city,
+    c.state,
+    c.summary,
+    c.linkedinUrl,
   ];
   for (const f of fields) {
     total++;
