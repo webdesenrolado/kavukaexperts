@@ -6,6 +6,7 @@ import {
   candidateEducations,
   candidateSkills,
   candidateLanguages,
+  assessments,
 } from "@/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
 import { getCandidateSession } from "@/lib/portal/session";
@@ -23,7 +24,7 @@ export default async function PortalMePage() {
   });
   if (!candidate) redirect("/portal/login");
 
-  const [experiences, educations, skills, languages] = await Promise.all([
+  const [experiences, educations, skills, languages, assessmentList] = await Promise.all([
     db
       .select()
       .from(candidateExperiences)
@@ -44,6 +45,16 @@ export default async function PortalMePage() {
       .from(candidateLanguages)
       .where(eq(candidateLanguages.candidateId, candidate.id))
       .orderBy(asc(candidateLanguages.sortOrder)),
+    db
+      .select({
+        id: assessments.id,
+        instrument: assessments.instrument,
+        status: assessments.status,
+        completedAt: assessments.completedAt,
+      })
+      .from(assessments)
+      .where(eq(assessments.candidateId, candidate.id))
+      .orderBy(desc(assessments.completedAt)),
   ]);
 
   // Drop sensitive fields antes de mandar pro client
@@ -62,6 +73,7 @@ export default async function PortalMePage() {
       initialEducations={educations as any}
       initialSkills={skills as any}
       initialLanguages={languages as any}
+      initialAssessments={assessmentList as any}
     />
   );
 }

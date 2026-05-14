@@ -76,7 +76,7 @@ type Language = {
   certification: string | null;
 };
 
-type Tab = "perfil" | "experiencia" | "formacao" | "skills" | "idiomas";
+type Tab = "perfil" | "experiencia" | "formacao" | "skills" | "idiomas" | "avaliacoes";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "perfil", label: "Perfil" },
@@ -84,7 +84,15 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "formacao", label: "Formação" },
   { key: "skills", label: "Skills" },
   { key: "idiomas", label: "Idiomas" },
+  { key: "avaliacoes", label: "Avaliações" },
 ];
+
+type AssessmentSummary = {
+  id: string;
+  instrument: string;
+  status: string;
+  completedAt: string | Date | null;
+};
 
 export function MeClient(props: {
   initialCandidate: Candidate;
@@ -92,6 +100,7 @@ export function MeClient(props: {
   initialEducations: Education[];
   initialSkills: Skill[];
   initialLanguages: Language[];
+  initialAssessments?: AssessmentSummary[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("perfil");
@@ -100,6 +109,7 @@ export function MeClient(props: {
   const [educations, setEducations] = useState<Education[]>(props.initialEducations);
   const [skills, setSkills] = useState<Skill[]>(props.initialSkills);
   const [languages, setLanguages] = useState<Language[]>(props.initialLanguages);
+  const assessments = props.initialAssessments || [];
 
   const completeness = computeCompleteness({ candidate, experiences, educations, skills, languages });
 
@@ -172,6 +182,182 @@ export function MeClient(props: {
       {tab === "formacao" && <EducationTab items={educations} setItems={setEducations} />}
       {tab === "skills" && <SkillsTab items={skills} setItems={setSkills} />}
       {tab === "idiomas" && <LanguagesTab items={languages} setItems={setLanguages} />}
+      {tab === "avaliacoes" && <AvaliacoesTab assessments={assessments} />}
+    </div>
+  );
+}
+
+// ========= AVALIAÇÕES =========
+function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
+  const INSTRUMENTOS: Array<{
+    slug: string;
+    name: string;
+    short: string;
+    duration: string;
+    items: string;
+    color: string;
+    gradient: string;
+  }> = [
+    {
+      slug: "label-adapted",
+      name: "LABEL · perfil por adjetivos",
+      short: "Você avalia 120 adjetivos. Gera radar de 13 dimensões + Big Five.",
+      duration: "15-20 min",
+      items: "120 adjetivos",
+      color: "#ff6a00",
+      gradient: "linear-gradient(135deg,#ff6a00,#ffcc00)",
+    },
+    {
+      slug: "disc-adapted",
+      name: "DISC · perfil comportamental",
+      short: "Define seu perfil em D/I/S/C e arquétipo profissional (Executor/Estrategista/Operador/Influenciador).",
+      duration: "10-15 min",
+      items: "24 blocos",
+      color: "#0ea5e9",
+      gradient: "linear-gradient(135deg,#0ea5e9,#06b6d4)",
+    },
+    {
+      slug: "arquetipos",
+      name: "Arquétipos · 12 tipos jungianos",
+      short: "Mapeia seu arquétipo dominante: Herói, Sábio, Criador, Cuidador, Explorador, Rebelde e outros.",
+      duration: "5-10 min",
+      items: "36 afirmações",
+      color: "#a855f7",
+      gradient: "linear-gradient(135deg,#a855f7,#ec4899)",
+    },
+    {
+      slug: "ipip-neo-120",
+      name: "IPIP-NEO · Big Five completo",
+      short: "120 afirmações que mapeiam 5 grandes traços e 30 facetas de personalidade.",
+      duration: "20-25 min",
+      items: "120 afirmações",
+      color: "#10b981",
+      gradient: "linear-gradient(135deg,#10b981,#84cc16)",
+    },
+  ];
+
+  const concluidos = new Set(
+    assessments.filter((a) => a.status === "completed").map((a) => a.instrument)
+  );
+  const total = INSTRUMENTOS.length;
+  const done = INSTRUMENTOS.filter((i) => concluidos.has(i.slug)).length;
+  const pct = Math.round((done / total) * 100);
+
+  return (
+    <div className="space-y-5">
+      {/* Banner motivador */}
+      <div
+        className="rounded-2xl border p-5"
+        style={{
+          borderColor: "var(--border)",
+          background: "linear-gradient(135deg, rgba(255,106,0,0.08), rgba(168,85,247,0.04))",
+        }}
+      >
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold text-lg mb-1">
+              Quanto mais avaliações, mais robusta sua KYID
+            </h2>
+            <p className="text-sm opacity-80 leading-relaxed">
+              Cada instrumento mede uma dimensão diferente de quem você é. Combinados,
+              eles geram seu <strong>Índice Comportamental</strong> e alimentam sua{" "}
+              <strong className="text-[#ff6a00]">Apostila ICH</strong> com profundidade
+              real. Você pode refazer a qualquer momento.
+            </p>
+          </div>
+          <div className="text-center shrink-0">
+            <div className="text-4xl font-bold" style={{ color: pct >= 75 ? "#10b981" : "#ff6a00" }}>
+              {done}<span className="text-base opacity-60">/{total}</span>
+            </div>
+            <div className="text-[10px] opacity-60 uppercase tracking-wider mt-0.5">
+              concluídas
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 h-1.5 rounded-full bg-black/20 dark:bg-white/10 overflow-hidden">
+          <div
+            className="h-full transition-all"
+            style={{
+              width: `${pct}%`,
+              background: "linear-gradient(90deg, #ff6a00, #a855f7)",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Cards dos instrumentos */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {INSTRUMENTOS.map((i) => {
+          const concluido = concluidos.has(i.slug);
+          const completedAt = assessments.find(
+            (a) => a.instrument === i.slug && a.status === "completed"
+          )?.completedAt;
+
+          return (
+            <div
+              key={i.slug}
+              className="rounded-xl border p-4 flex flex-col"
+              style={{
+                borderColor: concluido ? `${i.color}55` : "var(--border)",
+                background: concluido
+                  ? `linear-gradient(135deg, ${i.color}10, transparent)`
+                  : "var(--card)",
+              }}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="font-bold text-sm flex-1">{i.name}</h3>
+                {concluido && (
+                  <span
+                    className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold shrink-0 text-white"
+                    style={{ background: i.color }}
+                  >
+                    ✓ feito
+                  </span>
+                )}
+              </div>
+              <p className="text-xs opacity-75 leading-relaxed mb-3 flex-1">{i.short}</p>
+              <div className="flex items-center justify-between gap-2 text-[10px] opacity-60 mb-3">
+                <span>{i.items}</span>
+                <span>{i.duration}</span>
+              </div>
+              <a
+                href={`/portal/me/avaliar/${i.slug}`}
+                className="block w-full text-center py-2.5 rounded-lg font-bold text-sm text-black"
+                style={{ background: i.gradient }}
+              >
+                {concluido ? "Refazer" : "Fazer agora"}
+              </a>
+              {completedAt && (
+                <div className="text-[9px] opacity-50 text-center mt-1.5">
+                  Última: {new Date(completedAt).toLocaleDateString("pt-BR")}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* CTA pra apostila */}
+      <div
+        className="rounded-xl border p-4 flex items-center justify-between gap-3 flex-wrap"
+        style={{ borderColor: "var(--border)", background: "var(--card)" }}
+      >
+        <div>
+          <div className="font-semibold text-sm">Sua Apostila ICH</div>
+          <div className="text-xs opacity-70 mt-0.5">
+            {done === 0
+              ? "Faça pelo menos 1 avaliação pra começar a alimentar sua KYID."
+              : `Já temos ${done} avaliação${done === 1 ? "" : "es"} integrada${done === 1 ? "" : "s"} na sua Apostila.`}
+          </div>
+        </div>
+        <a
+          href="/portal/me/apostila"
+          className="px-4 py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+          style={{ borderColor: "var(--border)" }}
+        >
+          📄 Abrir minha Apostila
+        </a>
+      </div>
     </div>
   );
 }

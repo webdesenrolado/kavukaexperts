@@ -11,11 +11,13 @@ interface DiscFormProps {
   candidateId: string;
   candidateName: string;
   blocks: DiscBlock[];
+  endpoint?: string;
+  redirectTo?: string;
 }
 
 type Pick = "most" | "least";
 
-export function DiscForm({ candidateId, candidateName, blocks }: DiscFormProps) {
+export function DiscForm({ candidateId, candidateName, blocks, endpoint, redirectTo }: DiscFormProps) {
   const router = useRouter();
   const [phase, setPhase] = useState<"intro" | "form">("intro");
   const startedAtRef = useRef<number>(0);
@@ -89,23 +91,25 @@ export function DiscForm({ candidateId, candidateName, blocks }: DiscFormProps) 
           { item_id: `${b.id}-LEAST`, value: p.least! },
         ];
       });
-      const res = await fetch("/api/instruments/disc-adapted/apply", {
+      const url = endpoint || "/api/instruments/disc-adapted/apply";
+      const body: any = {
+        responses,
+        channel: "web",
+        language: "pt-BR",
+        completionTimeSeconds: completionTime,
+      };
+      if (!endpoint) body.candidateId = candidateId;
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidateId,
-          responses,
-          channel: "web",
-          language: "pt-BR",
-          completionTimeSeconds: completionTime,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         setError(j.error || "Falha ao salvar avaliação");
         return;
       }
-      router.push(`/candidatos/${candidateId}`);
+      router.push(redirectTo || `/candidatos/${candidateId}`);
       router.refresh();
     } finally {
       setSubmitting(false);

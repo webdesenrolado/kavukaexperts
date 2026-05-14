@@ -15,6 +15,8 @@ interface IpipFormProps {
   candidateId: string;
   candidateName: string;
   items: Item[];
+  endpoint?: string;
+  redirectTo?: string;
 }
 
 const SCALE = [
@@ -27,7 +29,7 @@ const SCALE = [
 
 const SCALE_COLORS = ["#ef4444", "#f97316", "#94a3b8", "#22c55e", "#10b981"];
 
-export function IpipForm({ candidateId, candidateName, items }: IpipFormProps) {
+export function IpipForm({ candidateId, candidateName, items, endpoint, redirectTo }: IpipFormProps) {
   const router = useRouter();
   const [phase, setPhase] = useState<"intro" | "form">("intro");
   const [responses, setResponses] = useState<Record<string, number>>({});
@@ -109,7 +111,9 @@ export function IpipForm({ candidateId, candidateName, items }: IpipFormProps) {
           response_time_ms: responseTimes[it.item_id] ?? 2000,
         })),
       };
-      const res = await fetch("/api/instruments/ipip-neo-120/apply", {
+      const url = endpoint || "/api/instruments/ipip-neo-120/apply";
+      if (!endpoint) (payload as any).candidateId = candidateId;
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -119,7 +123,9 @@ export function IpipForm({ candidateId, candidateName, items }: IpipFormProps) {
         setError(data.error || "Falha ao enviar avaliação.");
         return;
       }
-      router.push(`/candidatos/${candidateId}/avaliacoes/${data.application_id}`);
+      router.push(
+        redirectTo || `/candidatos/${candidateId}/avaliacoes/${data.application_id}`
+      );
     } catch {
       setError("Erro de conexão.");
     } finally {

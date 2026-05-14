@@ -4,26 +4,28 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import type { LabelItem } from "@/services/label-adapted/src/items";
+import type { ArchetypeItem } from "@/services/arquetipos/src/items";
 import { IntroScreen } from "./intro-screen";
 
-interface LabelFormProps {
+interface Props {
   candidateId: string;
   candidateName: string;
-  items: LabelItem[];
+  items: ArchetypeItem[];
+  /** Endpoint custom. Default: recrutador. Portal: /api/portal/me/instruments/arquetipos/apply */
   endpoint?: string;
+  /** Pra onde redirecionar após submit */
   redirectTo?: string;
 }
 
 const SCALE = [
-  { value: 1, label: "Discordo totalmente" },
-  { value: 2, label: "Discordo" },
-  { value: 3, label: "Indiferente" },
-  { value: 4, label: "Concordo" },
-  { value: 5, label: "Concordo totalmente" },
+  { value: 1, label: "Nada me descreve" },
+  { value: 2, label: "Pouco" },
+  { value: 3, label: "Mais ou menos" },
+  { value: 4, label: "Bastante" },
+  { value: 5, label: "Me descreve totalmente" },
 ];
 
-export function LabelForm({ candidateId, candidateName, items, endpoint, redirectTo }: LabelFormProps) {
+export function ArquetiposForm({ candidateId, candidateName, items, endpoint, redirectTo }: Props) {
   const router = useRouter();
   const [phase, setPhase] = useState<"intro" | "form">("intro");
   const startedAtRef = useRef<number>(0);
@@ -31,10 +33,9 @@ export function LabelForm({ candidateId, candidateName, items, endpoint, redirec
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Embaralha a ordem dos itens uma vez (reduz viés posicional)
+  // Shuffle determinístico por candidato pra reduzir viés posicional
   const shuffled = useMemo(() => {
     const arr = [...items];
-    // Fisher-Yates determinístico baseado no candidateId pra ser estável por sessão
     let seed = 0;
     for (const c of candidateId) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
     for (let i = arr.length - 1; i > 0; i--) {
@@ -50,6 +51,11 @@ export function LabelForm({ candidateId, candidateName, items, endpoint, redirec
   const progress = (answered / total) * 100;
   const allDone = answered === total;
 
+  function start() {
+    setPhase("form");
+    startedAtRef.current = Date.now();
+  }
+
   useEffect(() => {
     function before(e: BeforeUnloadEvent) {
       if (phase === "form" && answered > 0 && !allDone) {
@@ -61,11 +67,6 @@ export function LabelForm({ candidateId, candidateName, items, endpoint, redirec
     return () => window.removeEventListener("beforeunload", before);
   }, [phase, answered, allDone]);
 
-  function start() {
-    setPhase("form");
-    startedAtRef.current = Date.now();
-  }
-
   async function submit() {
     if (!allDone) return;
     setSubmitting(true);
@@ -73,7 +74,7 @@ export function LabelForm({ candidateId, candidateName, items, endpoint, redirec
     try {
       const completionTime = Math.round((Date.now() - startedAtRef.current) / 1000);
       const payload = items.map((it) => ({ item_id: it.id, value: responses[it.id] }));
-      const url = endpoint || "/api/instruments/label-adapted/apply";
+      const url = endpoint || "/api/instruments/arquetipos/apply";
       const body: any = {
         responses: payload,
         channel: "web",
@@ -103,10 +104,10 @@ export function LabelForm({ candidateId, candidateName, items, endpoint, redirec
       <IntroScreen
         candidateId={candidateId}
         candidateName={candidateName}
-        instrumentName="LABEL · perfil por adjetivos"
-        itemsLabel="120 adjetivos em escala 1-5"
-        durationLabel="15-20 minutos"
-        description="Você vai indicar o quanto cada palavra te descreve."
+        instrumentName="Arquétipos · 12 tipos jungianos"
+        itemsLabel="36 afirmações em escala 1-5"
+        durationLabel="5-10 minutos"
+        description="Você vai indicar o quanto cada afirmação te descreve. Mapeia seu arquétipo dominante (Herói, Sábio, Criador, etc)."
         onStart={start}
       />
     );
@@ -133,29 +134,63 @@ export function LabelForm({ candidateId, candidateName, items, endpoint, redirec
           <div className="h-1.5 rounded-full bg-black/20 dark:bg-white/10 overflow-hidden">
             <div
               className="h-full transition-all"
-              style={{ width: `${progress}%`, background: "linear-gradient(90deg, #ff6a00, #ffcc00)" }}
+              style={{
+                width: `${progress}%`,
+                background: "linear-gradient(90deg, #a855f7, #ec4899)",
+              }}
             />
           </div>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-6">
-        <h1 className="text-2xl font-bold mb-1">Avaliação por adjetivos</h1>
+        <h1 className="text-2xl font-bold mb-1">Arquétipos</h1>
         <p className="text-sm opacity-80 mb-6">
-          Para cada palavra abaixo, indique o quanto ela te descreve. Não há respostas certas ou erradas.
+          Vá com a primeira impressão pra cada afirmação. Não há certo ou errado.
         </p>
 
         <div className="space-y-3">
-          {shuffled.map((item, idx) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              index={idx + 1}
-              total={total}
-              value={responses[item.id]}
-              onChange={(v) => setResponses({ ...responses, [item.id]: v })}
-            />
-          ))}
+          {shuffled.map((item, idx) => {
+            const value = responses[item.id];
+            return (
+              <div
+                key={item.id}
+                className="border rounded-xl p-4"
+                style={{ borderColor: "var(--border)", background: "var(--card)" }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-[10px] opacity-50 font-mono">
+                    {idx + 1}/{total}
+                  </span>
+                </div>
+                <p className="text-sm mb-3 leading-relaxed">{item.text_pt}</p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {SCALE.map((s) => {
+                    const active = value === s.value;
+                    return (
+                      <button
+                        key={s.value}
+                        type="button"
+                        onClick={() => setResponses({ ...responses, [item.id]: s.value })}
+                        className={`px-2 py-2.5 rounded-md text-[10px] border transition-all ${
+                          active ? "scale-105" : "hover:scale-105"
+                        }`}
+                        style={{
+                          borderColor: active ? "#a855f7" : "var(--border)",
+                          background: active ? "rgba(168,85,247,0.15)" : "transparent",
+                          color: active ? "#a855f7" : undefined,
+                          fontWeight: active ? 700 : 400,
+                        }}
+                      >
+                        <div className="text-base mb-0.5 font-mono">{s.value}</div>
+                        <div className="opacity-80 leading-tight">{s.label}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {error && (
@@ -169,75 +204,21 @@ export function LabelForm({ candidateId, candidateName, items, endpoint, redirec
             type="button"
             onClick={submit}
             disabled={!allDone || submitting}
-            className="w-full py-3 rounded-lg font-bold text-black disabled:opacity-50 text-base shadow-xl"
-            style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
+            className="w-full py-3 rounded-lg font-bold text-white disabled:opacity-50 text-base shadow-xl"
+            style={{ background: "linear-gradient(135deg, #a855f7, #ec4899)" }}
           >
             {submitting ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 size={16} className="animate-spin" />
-                Calculando perfil...
+                Calculando arquétipos...
               </span>
             ) : !allDone ? (
-              `Faltam ${total - answered} adjetivos`
+              `Faltam ${total - answered} afirmações`
             ) : (
-              "Calcular perfil LABEL"
+              "Descobrir meu arquétipo"
             )}
           </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ItemCard({
-  item,
-  index,
-  total,
-  value,
-  onChange,
-}: {
-  item: LabelItem;
-  index: number;
-  total: number;
-  value?: number;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <div
-      className="border rounded-xl p-4"
-      style={{ borderColor: "var(--border)", background: "var(--card)" }}
-    >
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div>
-          <span className="text-[10px] opacity-50 font-mono">
-            {index}/{total}
-          </span>
-          <h3 className="text-lg font-semibold capitalize">{item.text_pt}</h3>
-        </div>
-      </div>
-      <div className="grid grid-cols-5 gap-1.5">
-        {SCALE.map((s) => {
-          const active = value === s.value;
-          return (
-            <button
-              key={s.value}
-              type="button"
-              onClick={() => onChange(s.value)}
-              className={`px-2 py-2.5 rounded-md text-[10px] border transition-all ${
-                active ? "scale-105" : "hover:scale-105"
-              }`}
-              style={{
-                borderColor: active ? "#ff6a00" : "var(--border)",
-                background: active ? "rgba(255,106,0,0.15)" : "transparent",
-                color: active ? "#ff6a00" : undefined,
-                fontWeight: active ? 700 : 400,
-              }}
-            >
-              <div className="text-base mb-0.5 font-mono">{s.value}</div>
-              <div className="opacity-80 leading-tight">{s.label}</div>
-            </button>
-          );
-        })}
       </div>
     </div>
   );
