@@ -34,6 +34,7 @@ type Candidate = {
   educationLevel: string | null;
   expectedSalary: number | null;
   resumeUrl: string | null;
+  avatarUrl: string | null;
 };
 
 type Experience = {
