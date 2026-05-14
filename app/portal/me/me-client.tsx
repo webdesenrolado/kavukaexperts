@@ -687,7 +687,6 @@ function PerfilTab({
         {/* Lista de links extras + Adicionar */}
         <LinksManager links={links} setLinks={setLinks} role={form.currentRole} />
       </FormSection>
-      </FormSection>
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <button
