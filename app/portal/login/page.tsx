@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LoginClient } from "./login-client";
 import { GoogleLoginButton } from "../google-login-button";
+import { AuthTabs } from "../auth-tabs";
 
 export const metadata = { title: "Entrar — Kavuka Experts" };
 
@@ -13,7 +14,9 @@ export default async function PortalLoginPage({
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null;
   const redirectTo = from || "/portal/me";
   return (
-    <div className="max-w-md mx-auto px-6 pt-16 pb-12">
+    <div className="max-w-md mx-auto px-6 pt-12 pb-12">
+      <AuthTabs active="login" />
+
       <h1 className="text-2xl font-bold mb-1">Entrar no portal</h1>
       <p className="text-sm opacity-70 mb-6">
         Acesse seu painel para manter seu currículo sempre atualizado.
@@ -34,12 +37,9 @@ export default async function PortalLoginPage({
 
       <LoginClient redirectTo={redirectTo} />
 
-      <div className="flex items-center justify-between text-xs opacity-60 mt-6">
+      <div className="text-xs opacity-60 mt-6 text-center">
         <Link href="/portal/recuperar" className="underline hover:opacity-100">
           Esqueci a senha
-        </Link>
-        <Link href="/portal/cadastro" className="underline hover:opacity-100">
-          Criar conta
         </Link>
       </div>
     </div>
