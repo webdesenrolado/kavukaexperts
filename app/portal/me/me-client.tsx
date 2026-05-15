@@ -1749,17 +1749,23 @@ function Modal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border p-5"
+        className="w-full max-w-2xl sm:max-h-[90vh] max-h-[95dvh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border p-4 sm:p-5 safe-area-bottom"
         style={{ borderColor: "var(--border)", background: "var(--background)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 sticky top-0 -mx-4 sm:-mx-5 px-4 sm:px-5 py-1" style={{ background: "var(--background)" }}>
           <h3 className="font-semibold text-lg">{title}</h3>
-          <button onClick={onClose} className="opacity-60 hover:opacity-100 text-xl">×</button>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="w-10 h-10 rounded-full flex items-center justify-center opacity-60 hover:opacity-100 text-2xl"
+          >
+            ×
+          </button>
         </div>
         {children}
       </div>

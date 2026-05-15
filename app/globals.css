@@ -236,3 +236,42 @@ html, body {
 .leaflet-popup-close-button:hover {
   color: #fff !important;
 }
+
+/* ============================================================
+   MOBILE — evita zoom no foco do input (iOS Safari precisa ≥16px),
+   melhora targets de toque, respeita safe-area do notch
+   ============================================================ */
+@media (max-width: 640px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input[type="search"],
+  input[type="date"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  button {
+    touch-action: manipulation;
+  }
+}
+
+/* Suporte a safe-area pra iPhones com notch */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Modal full-screen em telas pequenas */
+@media (max-width: 480px) {
+  .auth-mobile-fullscreen {
+    border-radius: 0 !important;
+    padding: 1.25rem !important;
+    min-height: 100vh;
+  }
+}
