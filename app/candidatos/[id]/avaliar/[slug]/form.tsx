@@ -200,14 +200,14 @@ export function IpipForm({ candidateId, candidateName, items, endpoint, redirect
                   </span>
                   <span className="text-sm md:text-base leading-relaxed">{item.text}</span>
                 </div>
-                <div className="flex gap-1.5 ml-11">
+                <div className="flex gap-1.5 sm:ml-11">
                   {SCALE.map((s, i) => {
                     const selected = value === s.value;
                     return (
                       <button
                         key={s.value}
                         onClick={() => setResponse(item.item_id, s.value)}
-                        className={`flex-1 px-2 py-2 rounded-lg text-xs font-medium border transition-all ${
+                        className={`likert-btn flex-1 px-2 py-3 sm:py-2 rounded-lg text-xs font-medium border transition-all ${
                           selected ? "scale-105 shadow-md" : "hover:scale-102 opacity-70 hover:opacity-100"
                         }`}
                         style={{
@@ -218,7 +218,7 @@ export function IpipForm({ candidateId, candidateName, items, endpoint, redirect
                         title={s.label}
                       >
                         <div className="hidden md:block">{s.label}</div>
-                        <div className="md:hidden font-bold">{s.short}</div>
+                        <div className="md:hidden font-bold text-sm">{s.short}</div>
                       </button>
                     );
                   })}

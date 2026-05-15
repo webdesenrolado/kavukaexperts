@@ -4,6 +4,8 @@ import { candidates, applications, assessments } from "@/db/schema";
 import { sql, desc } from "drizzle-orm";
 import { CandidatesListClient } from "./list-client";
 
+export const dynamic = "force-dynamic";
+
 interface CandidateRow {
   id: string;
   name: string;

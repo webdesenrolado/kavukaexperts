@@ -115,7 +115,7 @@ export function CarreirasClient({ jobs }: Props) {
       }}
     >
       {/* Header */}
-      <header className="px-4 py-5 border-b border-white/5 sticky top-0 z-30 backdrop-blur-md" style={{ background: "rgba(10,10,11,0.85)" }}>
+      <header className="px-4 py-3 sm:py-5 border-b border-white/5 sticky top-0 z-30 backdrop-blur-md safe-area-top" style={{ background: "rgba(10,10,11,0.85)" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -141,7 +141,7 @@ export function CarreirasClient({ jobs }: Props) {
       </header>
 
       {/* Hero */}
-      <section id="hero" className="relative px-4 pt-12 pb-16 overflow-hidden">
+      <section id="hero" className="relative px-4 pt-8 sm:pt-12 pb-10 sm:pb-16 overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none opacity-30"
           style={{
@@ -153,8 +153,8 @@ export function CarreirasClient({ jobs }: Props) {
           {submitted ? (
             <div className="text-center py-10 max-w-2xl mx-auto">
               <CheckCircle2 size={64} className="mx-auto text-[#10b981] mb-5" />
-              <h1 className="text-4xl md:text-5xl font-bold mb-3">Inscrição enviada 🎉</h1>
-              <p className="text-lg opacity-80 leading-relaxed">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3">Inscrição enviada 🎉</h1>
+              <p className="text-base sm:text-lg opacity-80 leading-relaxed">
                 Você se candidatou para <strong>{selectedJob?.title}</strong>.
               </p>
 
@@ -247,21 +247,21 @@ export function CarreirasClient({ jobs }: Props) {
                   Carreiras Kavuka
                 </span>
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight max-w-3xl">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight leading-tight max-w-3xl">
                 Encontre uma vaga.<br />
                 <span className="bg-gradient-to-r from-[#ff6a00] to-[#ffcc00] bg-clip-text text-transparent">
                   Construa sua KYID.
                 </span>
               </h1>
-              <p className="mt-6 max-w-xl text-lg opacity-80 leading-relaxed">
+              <p className="mt-4 sm:mt-6 max-w-xl text-base sm:text-lg opacity-80 leading-relaxed">
                 Aqui você não é currículo — é identidade. Aplique na vaga, faça a avaliação Kavuka, e
                 receba sua KYID: a sua identidade comportamental que você leva pra qualquer processo.
               </p>
-              <div className="flex flex-wrap items-center gap-3 mt-6 text-xs opacity-70">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-5 sm:mt-6 text-xs opacity-70">
                 <span className="inline-flex items-center gap-1">
                   <Fingerprint size={12} className="text-[#ff6a00]" /> KYID portátil pra vida toda
                 </span>
-                <span>·</span>
+                <span className="hidden sm:inline">·</span>
                 <span className="inline-flex items-center gap-1">
                   <ShieldCheck size={12} className="text-[#10b981]" /> Tratamento conforme LGPD
                 </span>

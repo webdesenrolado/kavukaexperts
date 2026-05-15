@@ -146,24 +146,25 @@ export function CurriculoICH(props: Props) {
         className="no-print sticky top-0 z-30 border-b backdrop-blur"
         style={{ borderColor: "var(--border)", background: "rgba(0,0,0,0.6)" }}
       >
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="text-xs opacity-70">
-            <strong>Currículo ICH</strong> · {candidate.name}
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+          <div className="text-xs opacity-70 min-w-0 truncate">
+            <strong>Currículo ICH</strong> <span className="hidden sm:inline">· {candidate.name}</span>
           </div>
           <button
             onClick={handlePrint}
             disabled={printing}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-black text-sm"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-bold text-black text-sm shrink-0"
             style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
           >
             <Printer size={14} />
-            {printing ? "Abrindo..." : "Imprimir / Salvar PDF"}
+            <span className="hidden sm:inline">{printing ? "Abrindo..." : "Imprimir / Salvar PDF"}</span>
+            <span className="sm:hidden">{printing ? "Abrindo..." : "PDF"}</span>
           </button>
         </div>
       </div>
 
       <div
-        className="apostila max-w-4xl mx-auto p-8"
+        className="apostila max-w-4xl mx-auto p-4 sm:p-6 md:p-8"
         style={{
           background: "#fafafa",
           color: "#1a1a1a",
@@ -447,19 +448,19 @@ function Capa({
 }) {
   return (
     <header
-      className="rounded-2xl p-8 mb-6"
+      className="rounded-2xl p-5 sm:p-8 mb-6"
       style={{
         background: "linear-gradient(135deg, #fff8f0 0%, #fffaf0 100%)",
         border: "2px solid #ff6a00",
       }}
     >
-      <div className="flex items-start justify-between gap-6 flex-wrap">
+      <div className="flex items-start justify-between gap-4 sm:gap-6 flex-wrap">
         <div className="flex-1 min-w-0">
           <div className="text-[10px] uppercase tracking-[0.3em] opacity-60 mb-2">
             Identidade de Conhecimento e Habilidades
           </div>
           <h1
-            className="text-4xl font-black leading-tight mb-2"
+            className="text-3xl sm:text-4xl font-black leading-tight mb-2 break-words"
             style={{
               background: "linear-gradient(90deg, #ff6a00, #ffcc00)",
               WebkitBackgroundClip: "text",
@@ -534,7 +535,7 @@ function DadosPessoais({
   viewer: "self" | "recruiter";
 }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-[11px]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-[11px]">
       <Field label="Nome completo" value={candidate.name} />
       <Field label="Email" value={candidate.email} />
       {candidate.phone && <Field label="Telefone" value={candidate.phone} />}

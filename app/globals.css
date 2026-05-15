@@ -275,3 +275,21 @@ html, body {
     min-height: 100vh;
   }
 }
+
+/* Esconde scrollbar mas mantém scroll funcional (pra tabs em mobile) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Botão Likert grande pra toque em mobile */
+@media (max-width: 640px) {
+  .likert-btn {
+    min-height: 56px !important;
+    font-size: 0.95rem;
+  }
+}

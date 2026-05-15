@@ -174,32 +174,36 @@ export function MeClient(props: {
   const completeness = computeCompleteness({ candidate, experiences, educations, skills, languages });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
       {/* Hero / completude */}
       <div
-        className="rounded-2xl border p-5 mb-5"
+        className="rounded-2xl border p-4 sm:p-5 mb-4 sm:mb-5"
         style={{
           borderColor: "var(--border)",
           background: "linear-gradient(135deg, rgba(255,106,0,0.08), rgba(255,204,0,0.02))",
         }}
       >
-        <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
-          <div className="flex-1 min-w-[200px]">
-            <h1 className="text-2xl font-bold">Olá, {candidate.name?.split(" ")[0]} 👋</h1>
-            <p className="text-sm opacity-80 mt-1">
+        <div className="flex items-start gap-3 sm:gap-4 mb-3">
+          <div className="shrink-0">
+            <AvatarUploader
+              initialAvatar={candidate.avatarUrl}
+              candidateName={candidate.name}
+              onChange={(url) => setCandidate({ ...candidate, avatarUrl: url })}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold leading-tight">
+              Olá, {candidate.name?.split(" ")[0]} 👋
+            </h1>
+            <p className="text-xs sm:text-sm opacity-80 mt-1 leading-snug">
               Quanto mais completo seu perfil, mais relevante você fica para vagas alinhadas ao seu objetivo.
             </p>
           </div>
-          <AvatarUploader
-            initialAvatar={candidate.avatarUrl}
-            candidateName={candidate.name}
-            onChange={(url) => setCandidate({ ...candidate, avatarUrl: url })}
-          />
         </div>
         <div className="mt-4">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="opacity-70">Currículo {completeness}% completo</span>
-            <span className="opacity-50">{completeness < 70 ? "continue preenchendo" : "ótimo perfil!"}</span>
+            <span className="opacity-50 hidden sm:inline">{completeness < 70 ? "continue preenchendo" : "ótimo perfil!"}</span>
           </div>
           <div className="h-2 rounded-full bg-black/20 dark:bg-white/10 overflow-hidden">
             <div
@@ -213,20 +217,23 @@ export function MeClient(props: {
         </div>
         <a
           href="/portal/me/apostila"
-          className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+          className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
           style={{ borderColor: "var(--border)" }}
         >
-          📄 Ver minha currículo ICH
+          📄 Ver meu Currículo ICH
         </a>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b mb-5 overflow-x-auto" style={{ borderColor: "var(--border)" }}>
+      <div
+        className="no-scrollbar flex gap-1 border-b mb-4 sm:mb-5 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0"
+        style={{ borderColor: "var(--border)" }}
+      >
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+            className={`px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
               tab === t.key ? "border-[#ff6a00]" : "border-transparent opacity-60 hover:opacity-100"
             }`}
           >
@@ -699,17 +706,17 @@ function PerfilTab({
         <LinksManager links={links} setLinks={setLinks} role={form.currentRole} />
       </FormSection>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
         <button
           type="button"
           onClick={onLogout}
-          className="text-xs opacity-60 hover:opacity-100 underline"
+          className="text-xs opacity-60 hover:opacity-100 underline self-center sm:self-auto"
         >
           Sair da conta
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           {savedAt && (
-            <span className="text-xs opacity-60">
+            <span className="text-xs opacity-60 hidden sm:inline">
               Salvo às {savedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
@@ -717,10 +724,10 @@ function PerfilTab({
             type="button"
             onClick={save}
             disabled={saving}
-            className="px-5 py-2.5 rounded-lg font-bold text-black disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-lg font-bold text-black disabled:opacity-50"
             style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
           >
-            {saving ? "Salvando..." : "Salvar"}
+            {saving ? "Salvando..." : "Salvar alterações"}
           </button>
         </div>
       </div>
@@ -920,7 +927,7 @@ function ExperienceForm({
             setSaving(false);
           }}
           disabled={saving}
-          className="px-5 py-2 rounded-lg font-bold text-black disabled:opacity-50"
+          className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-black disabled:opacity-50"
           style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
         >
           {saving ? "Salvando..." : "Salvar"}
@@ -1104,7 +1111,7 @@ function EducationForm({
             setSaving(false);
           }}
           disabled={saving}
-          className="px-5 py-2 rounded-lg font-bold text-black disabled:opacity-50"
+          className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-black disabled:opacity-50"
           style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
         >
           {saving ? "Salvando..." : "Salvar"}
@@ -1601,11 +1608,11 @@ function AddLinkModal({
               {err}
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border text-sm"
+              className="w-full sm:w-auto px-4 py-3 sm:py-2 rounded-lg border text-sm"
               style={{ borderColor: "var(--border)" }}
             >
               Cancelar
@@ -1614,7 +1621,7 @@ function AddLinkModal({
               type="button"
               onClick={save}
               disabled={busy}
-              className="px-5 py-2 rounded-lg font-bold text-black disabled:opacity-50"
+              className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-black disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
             >
               {busy ? "Salvando..." : "Adicionar"}

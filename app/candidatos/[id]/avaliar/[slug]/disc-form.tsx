@@ -173,11 +173,11 @@ export function DiscForm({ candidateId, candidateName, blocks, endpoint, redirec
                     <span className="text-[#10b981]">✓ completo</span>
                   )}
                 </div>
-                <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-2 gap-y-2 items-center">
+                <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-1.5 sm:gap-x-2 gap-y-2 items-center">
                   <div></div>
                   <div></div>
-                  <div className="text-[10px] uppercase tracking-wider opacity-60 text-center w-16">MAIS</div>
-                  <div className="text-[10px] uppercase tracking-wider opacity-60 text-center w-16">MENOS</div>
+                  <div className="text-[10px] uppercase tracking-wider opacity-60 text-center w-12 sm:w-16">MAIS</div>
+                  <div className="text-[10px] uppercase tracking-wider opacity-60 text-center w-12 sm:w-16">MENOS</div>
 
                   {block.items.map((item) => {
                     const isMost = p.most === item.letter;
@@ -187,36 +187,36 @@ export function DiscForm({ candidateId, candidateName, blocks, endpoint, redirec
                         key={item.letter}
                         className="contents"
                       >
-                        <span className="text-xs opacity-50 font-mono w-5 text-center">
+                        <span className="text-xs opacity-50 font-mono w-4 sm:w-5 text-center">
                           {item.letter.toUpperCase()}
                         </span>
                         <p className="text-sm leading-snug py-1">{item.text_pt}</p>
-                        <div className="flex justify-center w-16">
+                        <div className="flex justify-center w-12 sm:w-16">
                           <button
                             type="button"
                             onClick={() => setPick(block.id, "most", item.letter)}
-                            className={`w-7 h-7 rounded-full border-2 transition-all ${
+                            className={`w-10 h-10 sm:w-8 sm:h-8 rounded-full border-2 transition-all flex items-center justify-center ${
                               isMost
                                 ? "border-[#10b981] bg-[#10b981]"
                                 : "border-white/20 hover:border-[#10b981]/60"
                             }`}
                             aria-label={`Mais: ${item.text_pt}`}
                           >
-                            {isMost && <span className="text-black text-xs font-bold">✓</span>}
+                            {isMost && <span className="text-black text-sm font-bold">✓</span>}
                           </button>
                         </div>
-                        <div className="flex justify-center w-16">
+                        <div className="flex justify-center w-12 sm:w-16">
                           <button
                             type="button"
                             onClick={() => setPick(block.id, "least", item.letter)}
-                            className={`w-7 h-7 rounded-full border-2 transition-all ${
+                            className={`w-10 h-10 sm:w-8 sm:h-8 rounded-full border-2 transition-all flex items-center justify-center ${
                               isLeast
                                 ? "border-[#ef4444] bg-[#ef4444]"
                                 : "border-white/20 hover:border-[#ef4444]/60"
                             }`}
                             aria-label={`Menos: ${item.text_pt}`}
                           >
-                            {isLeast && <span className="text-white text-xs font-bold">×</span>}
+                            {isLeast && <span className="text-white text-sm font-bold">×</span>}
                           </button>
                         </div>
                       </div>

@@ -164,7 +164,7 @@ export function ArquetiposForm({ candidateId, candidateName, items, endpoint, re
                   </span>
                 </div>
                 <p className="text-sm mb-3 leading-relaxed">{item.text_pt}</p>
-                <div className="grid grid-cols-5 gap-1.5">
+                <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
                   {SCALE.map((s) => {
                     const active = value === s.value;
                     return (
@@ -172,7 +172,7 @@ export function ArquetiposForm({ candidateId, candidateName, items, endpoint, re
                         key={s.value}
                         type="button"
                         onClick={() => setResponses({ ...responses, [item.id]: s.value })}
-                        className={`px-2 py-2.5 rounded-md text-[10px] border transition-all ${
+                        className={`likert-btn px-1 sm:px-2 py-2.5 rounded-md text-[9px] sm:text-[10px] border transition-all ${
                           active ? "scale-105" : "hover:scale-105"
                         }`}
                         style={{

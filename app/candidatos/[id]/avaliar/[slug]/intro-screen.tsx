@@ -23,7 +23,7 @@ export function IntroScreen({
 }: IntroScreenProps) {
   return (
     <div
-      className="min-h-screen flex items-start justify-center p-4 pt-12"
+      className="min-h-screen flex items-start justify-center p-4 pt-6 sm:pt-12 pb-8"
       style={{ background: "var(--background)" }}
     >
       <div className="max-w-2xl w-full">
@@ -35,7 +35,7 @@ export function IntroScreen({
         </Link>
 
         <div
-          className="rounded-2xl border p-6 mb-4"
+          className="rounded-2xl border p-5 sm:p-6 mb-4"
           style={{
             borderColor: "var(--border)",
             background:
@@ -45,7 +45,7 @@ export function IntroScreen({
           <div className="text-[10px] uppercase tracking-[0.2em] opacity-60 mb-2">
             Avaliação comportamental
           </div>
-          <h1 className="text-2xl font-bold mb-2">{instrumentName}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold mb-2 leading-tight">{instrumentName}</h1>
           <p className="text-sm opacity-80 leading-relaxed">
             Olá, <strong>{candidateName}</strong>. {description} Você vai responder{" "}
             <strong>{itemsLabel}</strong>. Leva cerca de <strong>{durationLabel}</strong>.
@@ -53,7 +53,7 @@ export function IntroScreen({
         </div>
 
         <div
-          className="rounded-2xl border p-6 mb-4"
+          className="rounded-2xl border p-5 sm:p-6 mb-4"
           style={{
             borderColor: "rgba(255,106,0,0.4)",
             background: "rgba(255,106,0,0.05)",
