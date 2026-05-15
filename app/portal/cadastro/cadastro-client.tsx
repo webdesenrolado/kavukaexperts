@@ -33,7 +33,10 @@ export function CadastroClient() {
         setError(j.error || "Falha no cadastro");
         return;
       }
-      router.push("/portal/me");
+      try {
+        localStorage.setItem("kavuka_show_tour", "1");
+      } catch {}
+      router.push("/portal/me?welcome=1");
       router.refresh();
     } finally {
       setLoading(false);

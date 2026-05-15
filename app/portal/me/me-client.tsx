@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Select } from "@/components/select";
 import { AvatarUploader } from "./avatar-uploader";
+import { PortalTour } from "./portal-tour";
 
 type Candidate = {
   id: string;
@@ -163,6 +164,13 @@ export function MeClient(props: {
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("perfil");
+  const [welcomeFromUrl, setWelcomeFromUrl] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("welcome") === "1") {
+      setWelcomeFromUrl(true);
+    }
+  }, []);
   const [candidate, setCandidate] = useState<Candidate>(props.initialCandidate);
   const [experiences, setExperiences] = useState<Experience[]>(props.initialExperiences);
   const [educations, setEducations] = useState<Education[]>(props.initialEducations);
@@ -184,7 +192,7 @@ export function MeClient(props: {
         }}
       >
         <div className="flex items-start gap-3 sm:gap-4 mb-3">
-          <div className="shrink-0">
+          <div className="shrink-0" data-tour="avatar">
             <AvatarUploader
               initialAvatar={candidate.avatarUrl}
               candidateName={candidate.name}
@@ -200,7 +208,7 @@ export function MeClient(props: {
             </p>
           </div>
         </div>
-        <div className="mt-4">
+        <div className="mt-4" data-tour="completude">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="opacity-70">Currículo {completeness}% completo</span>
             <span className="opacity-50 hidden sm:inline">{completeness < 70 ? "continue preenchendo" : "ótimo perfil!"}</span>
@@ -217,6 +225,7 @@ export function MeClient(props: {
         </div>
         <a
           href="/portal/me/apostila"
+          data-tour="curriculo-ich"
           className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
           style={{ borderColor: "var(--border)" }}
         >
@@ -226,6 +235,7 @@ export function MeClient(props: {
 
       {/* Tabs */}
       <div
+        data-tour="tabs"
         className="no-scrollbar flex gap-1 border-b mb-4 sm:mb-5 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0"
         style={{ borderColor: "var(--border)" }}
       >
@@ -233,6 +243,7 @@ export function MeClient(props: {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
+            data-tour={t.key === "avaliacoes" ? "avaliacoes-tab" : undefined}
             className={`px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
               tab === t.key ? "border-[#ff6a00]" : "border-transparent opacity-60 hover:opacity-100"
             }`}
@@ -261,6 +272,12 @@ export function MeClient(props: {
       {tab === "skills" && <SkillsTab items={skills} setItems={setSkills} />}
       {tab === "idiomas" && <LanguagesTab items={languages} setItems={setLanguages} />}
       {tab === "avaliacoes" && <AvaliacoesTab assessments={assessments} />}
+
+      <PortalTour
+        candidateId={candidate.id}
+        forceOpen={welcomeFromUrl}
+        onRequestTab={(t) => setTab(t as Tab)}
+      />
     </div>
   );
 }
