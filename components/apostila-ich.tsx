@@ -379,13 +379,35 @@ export function CurriculoICH(props: Props) {
             </div>
           )}
 
-          {/* DISC perfil */}
-          {behavioralIndex.disc_profile && (
-            <div className="mt-3 pt-3 border-t" style={{ borderColor: "#ddd" }}>
-              <div className="text-[10px] uppercase tracking-wider opacity-60 mb-1">Perfil DISC adaptado</div>
-              <div className="text-lg font-bold" style={{ color: "#0ea5e9" }}>
-                {behavioralIndex.disc_profile}
-              </div>
+          {/* DISC perfil + Arquétipo dominante */}
+          {(behavioralIndex.disc_profile || behavioralIndex.archetype) && (
+            <div
+              className="mt-3 pt-3 border-t grid grid-cols-1 sm:grid-cols-2 gap-3"
+              style={{ borderColor: "#ddd" }}
+            >
+              {behavioralIndex.disc_profile && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider opacity-60 mb-1">
+                    Perfil DISC adaptado
+                  </div>
+                  <div className="text-lg font-bold" style={{ color: "#0ea5e9" }}>
+                    {behavioralIndex.disc_profile}
+                  </div>
+                </div>
+              )}
+              {behavioralIndex.archetype && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider opacity-60 mb-1">
+                    Arquétipo dominante
+                  </div>
+                  <div className="text-lg font-bold" style={{ color: "#ff6a00" }}>
+                    {behavioralIndex.archetype.dominant_label}
+                  </div>
+                  <div className="text-[10px] opacity-60 mt-0.5">
+                    Sustentado por {behavioralIndex.archetype.secondary_label}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </Section>
@@ -632,6 +654,7 @@ function AssessmentsDetail({ assessments }: { assessments: ApostilaAssessment[] 
     "ipip-neo-120": "IPIP-NEO-120 (Big Five completo)",
     "disc-adapted": "DISC adaptado GUÉP",
     "label-adapted": "LABEL adaptado GUÉP",
+    "arquetipos": "Arquétipos (12 tipos jungianos)",
   };
 
   return (
@@ -658,6 +681,7 @@ function AssessmentsDetail({ assessments }: { assessments: ApostilaAssessment[] 
 
               {a.instrument === "label-adapted" && scores && <LabelRadar scores={scores} />}
               {a.instrument === "disc-adapted" && scores && <DiscBars scores={scores} />}
+              {a.instrument === "arquetipos" && interp?.top3 && <ArchetypeTop3 top3={interp.top3} />}
 
               {interp?.narrative && (
                 <p className="text-[11px] opacity-80 mt-2 italic">{interp.narrative}</p>
@@ -665,6 +689,44 @@ function AssessmentsDetail({ assessments }: { assessments: ApostilaAssessment[] 
             </div>
           );
         })}
+    </div>
+  );
+}
+
+function ArchetypeTop3({
+  top3,
+}: {
+  top3: Array<{ archetype: string; label: string; score: number; description: string }>;
+}) {
+  return (
+    <div className="space-y-2 mt-2">
+      {top3.map((t, i) => (
+        <div
+          key={t.archetype}
+          className="rounded-md p-2 border"
+          style={{
+            borderColor: i === 0 ? "#ff6a00" : "#ddd",
+            background: i === 0 ? "#fff8f0" : "#fafafa",
+          }}
+        >
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <span
+                className="text-[9px] font-mono px-1.5 py-0.5 rounded"
+                style={{
+                  background: i === 0 ? "#ff6a00" : "#999",
+                  color: "#fff",
+                }}
+              >
+                {i + 1}º
+              </span>
+              <span className="font-semibold text-[12px]">{t.label}</span>
+            </div>
+            <span className="text-[10px] font-mono opacity-60">{t.score}/100</span>
+          </div>
+          <p className="text-[10px] opacity-75 leading-snug">{t.description}</p>
+        </div>
+      ))}
     </div>
   );
 }

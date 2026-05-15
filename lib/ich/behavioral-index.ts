@@ -13,7 +13,23 @@ export interface AssessmentSnapshot {
   instrument: string;
   status: string;
   scoresJson: string | null;
+  interpretationJson: string | null;
   qualityFlagsJson: string | null;
+}
+
+export interface ArchetypeTop {
+  archetype: string;
+  label: string;
+  score: number;
+  description: string;
+}
+
+export interface ArchetypeSummary {
+  dominant: string;
+  dominant_label: string;
+  secondary: string;
+  secondary_label: string;
+  top3: ArchetypeTop[];
 }
 
 export interface BehavioralIndexResult {
@@ -34,6 +50,8 @@ export interface BehavioralIndexResult {
   big_five: { O: number; C: number; E: number; A: number; S: number } | null;
   /** Perfil DISC (se DISC concluído) */
   disc_profile: string | null;
+  /** Síntese arquetípica (se Arquétipos concluído) */
+  archetype: ArchetypeSummary | null;
   /** Flags negativas detectadas */
   flags: string[];
 }
@@ -44,6 +62,7 @@ const INSTRUMENT_VALUE: Record<string, number> = {
   "disc-adapted": 30,
   "label-guep": 35,
   "disc-adapt": 30,
+  "arquetipos": 25,
 };
 
 function safeParse(s: string | null): any {
@@ -85,6 +104,7 @@ export function computeBehavioralIndex(assessments: AssessmentSnapshot[]): Behav
       components: { completude: 0, consistencia: 0, qualidade: 0 },
       big_five: null,
       disc_profile: null,
+      archetype: null,
       flags: ["nenhuma_avaliacao_concluida"],
     };
   }
@@ -152,6 +172,22 @@ export function computeBehavioralIndex(assessments: AssessmentSnapshot[]): Behav
     discProfile = s?.profile ?? s?.dominant ?? null;
   }
 
+  // === Arquétipos síntese ===
+  const arquetipos = completed.find((a) => a.instrument === "arquetipos");
+  let archetype: ArchetypeSummary | null = null;
+  if (arquetipos) {
+    const interp = safeParse(arquetipos.interpretationJson);
+    if (interp?.dominant && interp?.dominant_label) {
+      archetype = {
+        dominant: interp.dominant,
+        dominant_label: interp.dominant_label,
+        secondary: interp.secondary,
+        secondary_label: interp.secondary_label,
+        top3: Array.isArray(interp.top3) ? interp.top3 : [],
+      };
+    }
+  }
+
   // === SCORE FINAL ===
   const score = Math.max(0, Math.min(100, Math.round(completude + consistencia + qualidade)));
 
@@ -181,6 +217,7 @@ export function computeBehavioralIndex(assessments: AssessmentSnapshot[]): Behav
         }
       : null,
     disc_profile: discProfile,
+    archetype,
     flags: allFlags,
   };
 }

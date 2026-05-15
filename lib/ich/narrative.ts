@@ -161,6 +161,13 @@ export function generateNarrative(input: NarrativeInputs): ICHNarrative {
       partes.push(`No DISC adaptado, ${discDescription(behavioral.disc_profile)}.`);
       tags.push(`#${behavioral.disc_profile.toLowerCase()}`);
     }
+    if (behavioral.archetype) {
+      const arq = behavioral.archetype;
+      partes.push(
+        `Arquétipo dominante: ${arq.dominant_label}, com sustentação do ${arq.secondary_label}.`
+      );
+      tags.push(`#${arq.dominant.replace(/_/g, "-")}`);
+    }
     paragraphs.push(partes.join(" "));
   } else {
     paragraphs.push(
