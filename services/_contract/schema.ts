@@ -79,11 +79,13 @@ export const responseValueSchema = z.discriminatedUnion("kind", [
 
 /**
  * Backwards-compatible value: lets a microservice accept a bare integer
- * (interpreted as Likert 5) or the structured form.
+ * (interpreted as Likert 5/7), a bare short string (for forced-choice DISC
+ * letters "a"/"b"/"c"/"d"), or the structured form.
  */
 export const responseValueLooseSchema = z.union([
   responseValueSchema,
   z.number().int().min(1).max(7),
+  z.string().min(1).max(50),
 ]);
 
 export type ResponseValue = z.infer<typeof responseValueSchema>;

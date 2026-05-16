@@ -140,6 +140,7 @@ function computeQualityFlags(
 
 function extractRaw(value: Response["value"]): number | null {
   if (typeof value === "number") return value;
+  if (typeof value === "string") return null;
   if (value.kind === "likert5" || value.kind === "likert7") return value.value;
   return null;
 }

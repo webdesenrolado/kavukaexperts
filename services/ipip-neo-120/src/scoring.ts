@@ -91,6 +91,7 @@ function extractLikert5(value: Response["value"]): number | null {
     if (value >= 1 && value <= 5 && Number.isInteger(value)) return value;
     return null;
   }
+  if (typeof value === "string") return null;
   if (value.kind === "likert5") return value.value;
   // Other kinds (likert7, forced_choice, multiple_choice) are not valid for IPIP.
   return null;

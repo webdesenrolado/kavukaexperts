@@ -31,7 +31,12 @@ function parseResponses(input: ApplyInput): DiscRawResponse[] {
     if (!m) continue;
     const blockId = m[1].toUpperCase();
     const pick = m[2].toLowerCase() as "most" | "least";
-    const letter = String(r.value ?? "").toLowerCase().trim();
+    // Suporta r.value como string solta ("a") ou objeto { kind, value }
+    let rawLetter: unknown = r.value;
+    if (rawLetter && typeof rawLetter === "object" && "value" in rawLetter) {
+      rawLetter = (rawLetter as { value: unknown }).value;
+    }
+    const letter = String(rawLetter ?? "").toLowerCase().trim();
     if (letter !== "a" && letter !== "b" && letter !== "c" && letter !== "d") continue;
     out.push({ block_id: blockId, pick, letter: letter as "a" | "b" | "c" | "d" });
   }
