@@ -29,7 +29,7 @@ export default async function PortalAvaliarPage({
 
   const { slug } = await params;
   const endpoint = `/api/portal/me/instruments/${slug}/apply`;
-  const redirectTo = `/portal/me`;
+  const redirectTo = `/portal/me?completed=${slug}`;
 
   if (slug === "ipip-neo-120") {
     const items = IPIP_NEO_120_ITEMS.map((it) => ({

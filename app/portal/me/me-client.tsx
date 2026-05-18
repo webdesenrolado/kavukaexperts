@@ -165,12 +165,25 @@ export function MeClient(props: {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("perfil");
   const [welcomeFromUrl, setWelcomeFromUrl] = useState(false);
+  const [completedSlug, setCompletedSlug] = useState<string | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (new URLSearchParams(window.location.search).get("welcome") === "1") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("welcome") === "1") {
       setWelcomeFromUrl(true);
     }
+    const completed = params.get("completed");
+    if (completed) {
+      setCompletedSlug(completed);
+    }
   }, []);
+
+  function closeCompletedModal() {
+    setCompletedSlug(null);
+    if (typeof window !== "undefined") {
+      window.history.replaceState({}, "", "/portal/me");
+    }
+  }
   const [candidate, setCandidate] = useState<Candidate>(props.initialCandidate);
   const [experiences, setExperiences] = useState<Experience[]>(props.initialExperiences);
   const [educations, setEducations] = useState<Education[]>(props.initialEducations);
@@ -278,6 +291,99 @@ export function MeClient(props: {
         forceOpen={welcomeFromUrl}
         onRequestTab={(t) => setTab(t as Tab)}
       />
+
+      {completedSlug && (
+        <AssessmentCompletedModal
+          slug={completedSlug}
+          onClose={closeCompletedModal}
+        />
+      )}
+    </div>
+  );
+}
+
+const INSTRUMENT_LABEL: Record<string, string> = {
+  "ipip-neo-120": "IPIP-NEO · Big Five",
+  "disc-adapted": "DISC adaptado",
+  "label-adapted": "LABEL adaptado",
+  arquetipos: "Arquétipos (Jung)",
+};
+
+function AssessmentCompletedModal({
+  slug,
+  onClose,
+}: {
+  slug: string;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const name = INSTRUMENT_LABEL[slug] || "Avaliação";
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.7)" }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl border p-6 sm:p-7"
+        style={{
+          background: "var(--background)",
+          borderColor: "var(--border)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+          style={{ background: "linear-gradient(135deg,#ff6a00,#ffcc00)" }}
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+
+        <h2 className="text-xl sm:text-2xl font-bold leading-tight">
+          Avaliação concluída!
+        </h2>
+        <p className="text-sm opacity-80 mt-2 leading-relaxed">
+          Você terminou <strong>{name}</strong>. Seus resultados já estão no
+          seu Currículo ICH — abra para ver o radar, índices e narrativa
+          personalizada.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-2 mt-6">
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              router.push("/portal/me/apostila");
+            }}
+            className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-white"
+            style={{
+              background: "linear-gradient(135deg,#ff6a00,#ffcc00)",
+            }}
+          >
+            Ver meus resultados
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2.5 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+            style={{ borderColor: "var(--border)" }}
+          >
+            Continuar no portal
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
