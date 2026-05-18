@@ -32,9 +32,13 @@ export interface SkillsIndexResult {
 
 const LEVEL_WEIGHT: Record<string, number> = {
   basic: 1,
+  basico: 1,
   intermediate: 2,
+  intermediario: 2,
   advanced: 3,
+  avancado: 3,
   expert: 4,
+  especialista: 4,
 };
 
 function categoryOf(s: SkillRow): string {
@@ -42,7 +46,7 @@ function categoryOf(s: SkillRow): string {
 }
 
 function weightOf(s: SkillRow): number {
-  const lvl = (s.level || "intermediate").toLowerCase();
+  const lvl = (s.level || "intermediario").toLowerCase();
   const base = LEVEL_WEIGHT[lvl] ?? 2;
   const years = typeof s.yearsOfUse === "number" && s.yearsOfUse > 0 ? s.yearsOfUse : 0;
   const yearsBonus = Math.min(2, Math.sqrt(years) * 0.5);

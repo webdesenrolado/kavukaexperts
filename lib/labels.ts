@@ -62,3 +62,21 @@ export const EDUCATION_LABEL: Record<string, string> = {
   mestrado: "Mestrado",
   doutorado: "Doutorado",
 };
+
+const SKILL_LEVEL_LABEL: Record<string, string> = {
+  basic: "Básico",
+  basico: "Básico",
+  intermediate: "Intermediário",
+  intermediario: "Intermediário",
+  advanced: "Avançado",
+  avancado: "Avançado",
+  expert: "Especialista",
+  especialista: "Especialista",
+  fluente: "Fluente",
+  nativo: "Nativo",
+};
+
+export function levelLabel(level: string | null | undefined): string {
+  if (!level) return "";
+  return SKILL_LEVEL_LABEL[level.toLowerCase()] || level;
+}

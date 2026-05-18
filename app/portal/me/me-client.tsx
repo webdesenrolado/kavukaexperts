@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { Select } from "@/components/select";
 import { AvatarUploader } from "./avatar-uploader";
 import { PortalTour } from "./portal-tour";
+import { levelLabel } from "@/lib/labels";
+import { HARD_SKILLS, SOFT_SKILLS } from "@/lib/skills-catalog";
 
 type Candidate = {
   id: string;
@@ -279,7 +281,12 @@ export function MeClient(props: {
         />
       )}
       {tab === "experiencia" && (
-        <ExperienceTab items={experiences} setItems={setExperiences} />
+        <ExperienceTab
+          items={experiences}
+          setItems={setExperiences}
+          candidate={candidate}
+          onCandidateSave={(c) => setCandidate({ ...candidate, ...c })}
+        />
       )}
       {tab === "formacao" && <EducationTab items={educations} setItems={setEducations} />}
       {tab === "skills" && <SkillsTab items={skills} setItems={setSkills} />}
@@ -736,60 +743,6 @@ function PerfilTab({
         </FieldRow>
       </FormSection>
 
-      <FormSection title="Resumo profissional">
-        <Field label="Conte um pouco sobre você (até 500 caracteres)">
-          <Textarea
-            value={form.summary ?? ""}
-            onChange={(v) => set("summary", v.slice(0, 500))}
-            rows={4}
-            placeholder="Profissional com X anos de experiência em..."
-          />
-          <div className="text-[10px] opacity-50 mt-1 text-right">
-            {(form.summary?.length ?? 0)}/500
-          </div>
-        </Field>
-        <FieldRow>
-          <Field label="Cargo atual">
-            <Input value={form.currentRole ?? ""} onChange={(v) => set("currentRole", v)} />
-          </Field>
-          <Field label="Empresa atual">
-            <Input value={form.currentCompany ?? ""} onChange={(v) => set("currentCompany", v)} />
-          </Field>
-        </FieldRow>
-        <FieldRow>
-          <Field label="Anos de experiência" small>
-            <Input
-              type="number"
-              value={form.yearsExperience?.toString() ?? ""}
-              onChange={(v) => set("yearsExperience", v ? parseInt(v) : null)}
-            />
-          </Field>
-          <Field label="Pretensão salarial (R$)">
-            <Input
-              type="number"
-              value={form.expectedSalary?.toString() ?? ""}
-              onChange={(v) => set("expectedSalary", v ? parseInt(v) : null)}
-            />
-          </Field>
-          <Field label="Escolaridade">
-            <Select
-              value={form.educationLevel ?? ""}
-              onChange={(v) => set("educationLevel", v)}
-              options={[
-                { value: "", label: "Não informar" },
-                { value: "medio", label: "Ensino médio" },
-                { value: "tecnico", label: "Técnico" },
-                { value: "superior_incompleto", label: "Superior incompleto" },
-                { value: "superior", label: "Superior completo" },
-                { value: "pos", label: "Pós-graduação" },
-                { value: "mestrado", label: "Mestrado" },
-                { value: "doutorado", label: "Doutorado" },
-              ]}
-            />
-          </Field>
-        </FieldRow>
-      </FormSection>
-
       <FormSection title="Links e portfólio">
         {/* LinkedIn em destaque */}
         <div
@@ -858,13 +811,134 @@ function PerfilTab({
   );
 }
 
+// ========= RESUMO PROFISSIONAL (topo da aba Experiência) =========
+function ResumoCard({
+  candidate,
+  onCandidateSave,
+}: {
+  candidate: Candidate;
+  onCandidateSave: (c: Partial<Candidate>) => void;
+}) {
+  const [form, setForm] = useState({
+    summary: candidate.summary ?? "",
+    currentRole: candidate.currentRole ?? "",
+    currentCompany: candidate.currentCompany ?? "",
+    yearsExperience: candidate.yearsExperience,
+    expectedSalary: candidate.expectedSalary,
+    educationLevel: candidate.educationLevel ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+
+  function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
+    setForm({ ...form, [k]: v });
+  }
+
+  async function save() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/portal/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        onCandidateSave(form);
+        setSavedAt(new Date());
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <FormSection title="Resumo profissional">
+      <p className="text-xs opacity-70 leading-relaxed -mt-2 mb-3">
+        Antes de listar suas experiências, conte um pouco sobre você de forma geral.
+        Esse resumo aparece no topo do seu Currículo ICH — é o primeiro que o recrutador lê.
+      </p>
+      <Field label="Conte um pouco sobre você (até 500 caracteres)">
+        <Textarea
+          value={form.summary ?? ""}
+          onChange={(v) => set("summary", v.slice(0, 500))}
+          rows={4}
+          placeholder="Ex.: Profissional com 8 anos de experiência em atendimento ao cliente e gestão de pequenos times. Gosto de trabalhar com processos organizados e detesto retrabalho. Busco uma empresa onde possa crescer no longo prazo."
+        />
+        <div className="text-[10px] opacity-50 mt-1 text-right">
+          {(form.summary?.length ?? 0)}/500
+        </div>
+      </Field>
+      <FieldRow>
+        <Field label="Cargo atual">
+          <Input value={form.currentRole ?? ""} onChange={(v) => set("currentRole", v)} />
+        </Field>
+        <Field label="Empresa atual">
+          <Input value={form.currentCompany ?? ""} onChange={(v) => set("currentCompany", v)} />
+        </Field>
+      </FieldRow>
+      <FieldRow>
+        <Field label="Anos de experiência" small>
+          <Input
+            type="number"
+            value={form.yearsExperience?.toString() ?? ""}
+            onChange={(v) => set("yearsExperience", v ? parseInt(v) : null)}
+          />
+        </Field>
+        <Field label="Pretensão salarial (R$)">
+          <Input
+            type="number"
+            value={form.expectedSalary?.toString() ?? ""}
+            onChange={(v) => set("expectedSalary", v ? parseInt(v) : null)}
+          />
+        </Field>
+        <Field label="Escolaridade">
+          <Select
+            value={form.educationLevel ?? ""}
+            onChange={(v) => set("educationLevel", v)}
+            options={[
+              { value: "", label: "Não informar" },
+              { value: "medio", label: "Ensino médio" },
+              { value: "tecnico", label: "Técnico" },
+              { value: "superior_incompleto", label: "Superior incompleto" },
+              { value: "superior", label: "Superior completo" },
+              { value: "pos", label: "Pós-graduação" },
+              { value: "mestrado", label: "Mestrado" },
+              { value: "doutorado", label: "Doutorado" },
+            ]}
+          />
+        </Field>
+      </FieldRow>
+      <div className="flex items-center justify-end gap-3 pt-1">
+        {savedAt && (
+          <span className="text-xs opacity-60">
+            Salvo às {savedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="px-4 py-2 rounded-lg font-bold text-black disabled:opacity-50 text-sm"
+          style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
+        >
+          {saving ? "Salvando..." : "Salvar resumo"}
+        </button>
+      </div>
+    </FormSection>
+  );
+}
+
 // ========= EXPERIÊNCIA =========
 function ExperienceTab({
   items,
   setItems,
+  candidate,
+  onCandidateSave,
 }: {
   items: Experience[];
   setItems: (i: Experience[]) => void;
+  candidate: Candidate;
+  onCandidateSave: (c: Partial<Candidate>) => void;
 }) {
   const [editing, setEditing] = useState<Experience | null>(null);
 
@@ -897,9 +971,18 @@ function ExperienceTab({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-sm opacity-70">{items.length} experiência(s) cadastrada(s)</p>
+    <div className="space-y-5">
+      <ResumoCard candidate={candidate} onCandidateSave={onCandidateSave} />
+
+      <div className="flex items-center justify-between mt-6 mb-1">
+        <div>
+          <h3 className="text-base font-bold">Experiências profissionais</h3>
+          <p className="text-xs opacity-70 mt-0.5">
+            {items.length === 0
+              ? "Adicione seu cargo atual e os anteriores, em ordem do mais recente pro mais antigo."
+              : `${items.length} experiência(s) cadastrada(s)`}
+          </p>
+        </div>
         <button
           onClick={() =>
             setEditing({
@@ -1025,20 +1108,24 @@ function ExperienceForm({
           </label>
         </Field>
       </FieldRow>
-      <Field label="Descrição">
+      <Field label="Conte o que você fazia no dia a dia (escreva com suas palavras, sem medo)">
         <Textarea
           value={value.description ?? ""}
           onChange={(v) => set("description", v)}
-          rows={3}
-          placeholder="O que você fazia, ferramentas usadas..."
+          rows={5}
+          placeholder="Ex.: Eu atuava na área de projetos da empresa. Cuidava do controle de planilhas no Excel, organizava agendas de reuniões, atendia clientes por telefone e e-mail, e ajudava o time comercial a montar propostas. Quando tinha pico de demanda, treinava colegas novos. Use exemplos concretos — o RH valoriza muito quem consegue se descrever com riqueza de detalhes."
         />
+        <p className="text-[10px] opacity-60 mt-1 leading-snug">
+          Dica: escreva como se estivesse contando pra alguém da sua família o que você faz.
+          Quanto mais contexto (ferramentas, com quem trabalhava, situações típicas), melhor.
+        </p>
       </Field>
-      <Field label="Principais entregas / resultados">
+      <Field label="Principais entregas / resultados (o que você conseguiu de mensurável)">
         <Textarea
           value={value.achievements ?? ""}
           onChange={(v) => set("achievements", v)}
-          rows={2}
-          placeholder="Conquistas mensuráveis..."
+          rows={3}
+          placeholder="Ex.: Reduzi o tempo de resposta a clientes em 40%. Organizei o controle financeiro que estava atrasado havia 6 meses. Treinei 5 colegas novos. Liderei o projeto X que economizou R$ Y."
         />
       </Field>
       <div className="flex justify-end pt-2">
@@ -1246,14 +1333,11 @@ function EducationForm({
 
 // ========= SKILLS =========
 function SkillsTab({ items, setItems }: { items: Skill[]; setItems: (i: Skill[]) => void }) {
-  const [skill, setSkill] = useState("");
-  const [level, setLevel] = useState("intermediate");
-  const [adding, setAdding] = useState(false);
+  const hardItems = items.filter((s) => (s.category ?? "hard") === "hard");
+  const softItems = items.filter((s) => s.category === "soft");
 
-  async function add() {
-    if (!skill.trim()) return;
-    setAdding(true);
-    const body = { skill: skill.trim(), level, sortOrder: items.length };
+  async function add(skill: string, level: string | null, category: "hard" | "soft") {
+    const body = { skill: skill.trim(), level, category, sortOrder: items.length };
     const res = await fetch("/api/portal/me/skills", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1261,10 +1345,11 @@ function SkillsTab({ items, setItems }: { items: Skill[]; setItems: (i: Skill[])
     });
     if (res.ok) {
       const j = await res.json();
-      setItems([...items, { id: j.id, skill: body.skill, level: body.level, category: null, yearsOfUse: null }]);
-      setSkill("");
+      setItems([
+        ...items,
+        { id: j.id, skill: body.skill, level: body.level, category, yearsOfUse: null },
+      ]);
     }
-    setAdding(false);
   }
 
   async function remove(id: string) {
@@ -1273,67 +1358,232 @@ function SkillsTab({ items, setItems }: { items: Skill[]; setItems: (i: Skill[])
   }
 
   return (
-    <div className="space-y-3">
-      <div className="border rounded-lg p-4" style={{ borderColor: "var(--border)" }}>
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-xs uppercase tracking-wider opacity-70 block mb-1">Nova skill</label>
+    <div className="space-y-5">
+      <SkillCategoryPanel
+        category="hard"
+        title="Hard Skills"
+        subtitle="Habilidades técnicas — o que você sabe fazer com ferramentas, sistemas, processos. Pode ter nível."
+        explanation="São as habilidades que se aprendem em curso, prática ou no trabalho. Exemplos: Excel, Python, atendimento ao cliente, gestão de estoque, Photoshop. Comece a digitar e veja as sugestões — ou cadastre uma habilidade fora da lista."
+        catalog={HARD_SKILLS}
+        items={hardItems}
+        onAdd={(skill, level) => add(skill, level, "hard")}
+        onRemove={remove}
+        accentColor="#ff6a00"
+        withLevel
+      />
+
+      <SkillCategoryPanel
+        category="soft"
+        title="Soft Skills"
+        subtitle="Habilidades comportamentais — como você se relaciona, decide, lidera, aprende."
+        explanation="São qualidades pessoais que aparecem na forma de trabalhar. Exemplos: comunicação clara, resiliência, trabalho em equipe, foco em resultados. Não precisa marcar nível — basta selecionar as que melhor descrevem você."
+        catalog={SOFT_SKILLS}
+        items={softItems}
+        onAdd={(skill) => add(skill, null, "soft")}
+        onRemove={remove}
+        accentColor="#0ea5e9"
+        withLevel={false}
+      />
+    </div>
+  );
+}
+
+function SkillCategoryPanel({
+  title,
+  subtitle,
+  explanation,
+  catalog,
+  items,
+  onAdd,
+  onRemove,
+  accentColor,
+  withLevel,
+}: {
+  category: "hard" | "soft";
+  title: string;
+  subtitle: string;
+  explanation: string;
+  catalog: string[];
+  items: Skill[];
+  onAdd: (skill: string, level: string | null) => Promise<void>;
+  onRemove: (id: string) => Promise<void>;
+  accentColor: string;
+  withLevel: boolean;
+}) {
+  const [skill, setSkill] = useState("");
+  const [level, setLevel] = useState("intermediario");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  const owned = new Set(items.map((i) => i.skill.toLowerCase()));
+  const query = skill.trim().toLowerCase();
+  const suggestions = query.length === 0
+    ? catalog.filter((s) => !owned.has(s.toLowerCase())).slice(0, 12)
+    : catalog
+        .filter(
+          (s) =>
+            s.toLowerCase().includes(query) && !owned.has(s.toLowerCase()),
+        )
+        .slice(0, 12);
+
+  async function handleAdd(value?: string) {
+    const v = (value ?? skill).trim();
+    if (!v) return;
+    setAdding(true);
+    await onAdd(v, withLevel ? level : null);
+    setSkill("");
+    setAdding(false);
+  }
+
+  return (
+    <div
+      className="border rounded-xl overflow-hidden"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <div
+        className="px-4 py-3 border-b"
+        style={{ borderColor: "var(--border)", background: `${accentColor}10` }}
+      >
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <h3 className="font-bold text-base" style={{ color: accentColor }}>
+            {title}
+          </h3>
+          <span className="text-xs opacity-70">{subtitle}</span>
+        </div>
+        <p className="text-[11px] opacity-70 mt-1 leading-snug">{explanation}</p>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <div className="flex flex-wrap items-end gap-2 relative">
+          <div className="flex-1 min-w-[200px] relative">
+            <label className="text-xs uppercase tracking-wider opacity-70 block mb-1">
+              {withLevel ? "Nova hard skill" : "Nova soft skill"}
+            </label>
             <input
               value={skill}
-              onChange={(e) => setSkill(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && add()}
-              placeholder="Ex.: Python, React, Excel avançado"
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              onChange={(e) => {
+                setSkill(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAdd();
+                }
+                if (e.key === "Escape") setShowSuggestions(false);
+              }}
+              placeholder={
+                withLevel
+                  ? "Ex.: Excel avançado, Python, atendimento ao cliente..."
+                  : "Ex.: Comunicação clara, proatividade, trabalho em equipe..."
+              }
               className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm"
               style={{ borderColor: "var(--border)" }}
             />
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                className="absolute z-20 left-0 right-0 mt-1 border rounded-lg shadow-lg max-h-64 overflow-y-auto"
+                style={{ background: "var(--bg)", borderColor: "var(--border)" }}
+              >
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleAdd(s)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-between"
+                  >
+                    <span>{s}</span>
+                    <span className="text-[10px] opacity-50">+ adicionar</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider opacity-70 block mb-1">Nível</label>
-            <Select
-              value={level}
-              onChange={setLevel}
-              options={[
-                { value: "basic", label: "Básico" },
-                { value: "intermediate", label: "Intermediário" },
-                { value: "advanced", label: "Avançado" },
-                { value: "expert", label: "Especialista" },
-              ]}
-            />
-          </div>
+          {withLevel && (
+            <div>
+              <label className="text-xs uppercase tracking-wider opacity-70 block mb-1">
+                Nível
+              </label>
+              <Select
+                value={level}
+                onChange={setLevel}
+                options={[
+                  { value: "basico", label: "Básico" },
+                  { value: "intermediario", label: "Intermediário" },
+                  { value: "avancado", label: "Avançado" },
+                  { value: "especialista", label: "Especialista" },
+                ]}
+              />
+            </div>
+          )}
           <button
-            onClick={add}
+            onClick={() => handleAdd()}
             disabled={adding || !skill.trim()}
             className="px-4 py-2 rounded-lg font-bold text-black disabled:opacity-50 text-sm"
-            style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
+            style={{ background: `linear-gradient(135deg, ${accentColor}, #ffcc00)` }}
           >
             Adicionar
           </button>
         </div>
-      </div>
 
-      {items.length === 0 ? (
-        <Empty msg="Nenhuma skill cadastrada." />
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {items.map((s) => (
-            <span
-              key={s.id}
-              className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1 rounded-full text-xs border"
-              style={{ borderColor: "var(--border)", background: "var(--card)" }}
-            >
-              {s.skill}
-              {s.level && <span className="opacity-60 text-[10px] uppercase">· {s.level}</span>}
-              <button
-                onClick={() => remove(s.id)}
-                className="ml-0.5 w-5 h-5 rounded-full bg-black/10 dark:bg-white/10 hover:bg-red-500/20 hover:text-red-500 flex items-center justify-center text-[10px]"
-                title="Remover"
+        {/* Balões/chips de sugestões rápidas (quando não digitou nada) */}
+        {skill.trim().length === 0 && (
+          <div className="pt-1">
+            <p className="text-[10px] uppercase tracking-wider opacity-50 mb-1.5">
+              Sugestões — clique para adicionar
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {catalog
+                .filter((s) => !owned.has(s.toLowerCase()))
+                .slice(0, 14)
+                .map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleAdd(s)}
+                    className="text-[11px] px-2.5 py-1 rounded-full border opacity-80 hover:opacity-100"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    + {s}
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Skills cadastradas */}
+        {items.length === 0 ? (
+          <p className="text-xs opacity-50 italic py-2">
+            Nenhuma {withLevel ? "hard" : "soft"} skill cadastrada ainda.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {items.map((s) => (
+              <span
+                key={s.id}
+                className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1 rounded-full text-xs border"
+                style={{ borderColor: accentColor, background: `${accentColor}10` }}
               >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
+                <strong>{s.skill}</strong>
+                {s.level && (
+                  <span className="opacity-70 text-[10px] uppercase">
+                    · {levelLabel(s.level)}
+                  </span>
+                )}
+                <button
+                  onClick={() => onRemove(s.id)}
+                  className="ml-0.5 w-5 h-5 rounded-full bg-black/10 dark:bg-white/10 hover:bg-red-500/20 hover:text-red-500 flex items-center justify-center text-[10px]"
+                  title="Remover"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1418,7 +1668,7 @@ function LanguagesTab({ items, setItems }: { items: Language[]; setItems: (i: La
             >
               <div>
                 <div className="font-semibold text-sm">{l.language}</div>
-                {l.level && <div className="text-xs opacity-70 capitalize">{l.level}</div>}
+                {l.level && <div className="text-xs opacity-70">{levelLabel(l.level)}</div>}
               </div>
               <button
                 onClick={() => remove(l.id)}

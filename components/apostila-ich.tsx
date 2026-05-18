@@ -6,6 +6,7 @@ import type { SkillsIndexResult } from "@/lib/ich/skills-index";
 import type { BehavioralIndexResult } from "@/lib/ich/behavioral-index";
 import type { ICHNarrative } from "@/lib/ich/narrative";
 import { RadarChart, type RadarAxis } from "./radar-chart";
+import { levelLabel } from "@/lib/labels";
 
 export interface ApostilaCandidate {
   id: string;
@@ -30,7 +31,9 @@ export interface ApostilaCandidate {
   yearsExperience: number | null;
   educationLevel: string | null;
   kyidToken: string | null;
+  avatarUrl: string | null;
 }
+
 
 export interface ApostilaExperience {
   id: string;
@@ -274,7 +277,9 @@ export function CurriculoICH(props: Props) {
                   style={{ borderColor: "#999" }}
                 >
                   {s.skill}
-                  {s.level && <span className="opacity-60 text-[9px] uppercase">· {s.level}</span>}
+                  {s.level && (
+                    <span className="opacity-60 text-[9px] uppercase">· {levelLabel(s.level)}</span>
+                  )}
                 </span>
               ))}
             </div>
@@ -288,7 +293,7 @@ export function CurriculoICH(props: Props) {
               {languages.map((l) => (
                 <div key={l.id} className="border rounded-lg p-2" style={{ borderColor: "#ddd" }}>
                   <div className="text-sm font-semibold">{l.language}</div>
-                  {l.level && <div className="text-[10px] opacity-70 capitalize">{l.level}</div>}
+                  {l.level && <div className="text-[10px] opacity-70">{levelLabel(l.level)}</div>}
                   {l.certification && <div className="text-[9px] opacity-50">{l.certification}</div>}
                 </div>
               ))}
@@ -301,6 +306,15 @@ export function CurriculoICH(props: Props) {
 
         {/* === SEÇÃO 7: ÍNDICE DE HABILIDADES === */}
         <Section title="7. Índice de Habilidades" icon={<Wrench size={16} />}>
+          <p className="text-[11px] opacity-75 leading-relaxed mb-3" style={{ background: "#fffaf0", borderLeft: "3px solid #ff6a00", padding: "8px 12px", borderRadius: 4 }}>
+            <strong>O que é:</strong> nota de 0 a 100 que sintetiza o repertório técnico do
+            candidato. <strong>Como é calculada:</strong> combina o <em>nível</em> declarado em cada
+            habilidade (Básico, Intermediário, Avançado, Especialista), os <em>anos de uso</em>{" "}
+            e a <em>diversidade</em> de áreas cobertas. Quanto mais skills relevantes, mais tempo
+            de prática e maior variedade, maior o índice. É uma fotografia do que a pessoa{" "}
+            <em>sabe fazer</em> — não substitui a entrevista técnica, mas orienta a profundidade
+            das perguntas.
+          </p>
           <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
             <div>
               <div className="text-4xl font-bold" style={{ color: "#ff6a00" }}>
@@ -346,6 +360,16 @@ export function CurriculoICH(props: Props) {
 
         {/* === SEÇÃO 8: ÍNDICE COMPORTAMENTAL === */}
         <Section title="8. Índice Comportamental" icon={<Brain size={16} />}>
+          <p className="text-[11px] opacity-75 leading-relaxed mb-3" style={{ background: "#f0f9ff", borderLeft: "3px solid #0ea5e9", padding: "8px 12px", borderRadius: 4 }}>
+            <strong>O que é:</strong> nota de 0 a 100 que mede a <em>qualidade da medição</em>{" "}
+            comportamental — não a personalidade em si, mas o quanto confiamos no que foi
+            captado. <strong>Três componentes:</strong> <em>Completude</em> (quantos dos
+            instrumentos previstos foram respondidos), <em>Consistência</em> (se os instrumentos
+            concordam entre si — ex.: Big Five &times; DISC) e <em>Qualidade</em> (padrões de
+            resposta como tempo gasto, variabilidade, ausência de respostas em sequência).
+            Índice alto = retrato robusto. Índice baixo = precisa aplicar mais instrumentos
+            antes de tirar conclusões.
+          </p>
           <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
             <div>
               <div className="text-4xl font-bold" style={{ color: "#0ea5e9" }}>
@@ -415,12 +439,20 @@ export function CurriculoICH(props: Props) {
         {/* === SEÇÃO 9: AVALIAÇÕES DETALHADAS === */}
         {assessments.length > 0 && (
           <Section title="9. Avaliações comportamentais aplicadas" icon={<Heart size={16} />}>
+            <p className="text-[11px] opacity-75 leading-relaxed mb-3" style={{ background: "#fdf4ff", borderLeft: "3px solid #a855f7", padding: "8px 12px", borderRadius: 4 }}>
+              <strong>Como ler:</strong> cada instrumento abaixo é uma <em>lente</em> diferente
+              sobre a mesma pessoa. Big Five descreve traços estáveis. DISC adaptado descreve
+              estilo de ação no trabalho. LABEL descreve auto-percepção. Arquétipos descrevem
+              motivação dominante. Os pontos fortes e pontos de atenção são <em>sinalizações</em>,
+              não diagnósticos clínicos — servem para preparar a entrevista, não para tomar
+              decisão sozinha.
+            </p>
             <AssessmentsDetail assessments={assessments} />
           </Section>
         )}
 
         {/* === SEÇÃO 10: ICH NARRATIVA === */}
-        <Section title="10. ICH — Identidade de Conhecimento e Habilidades" icon={<Award size={16} />}>
+        <Section title="10. ICH — Índice de Conhecimento e Habilidades" icon={<Award size={16} />}>
           <div className="space-y-3">
             {narrative.paragraphs.map((p, i) => (
               <p key={i} className="text-[12px] leading-relaxed">{p}</p>
@@ -433,16 +465,8 @@ export function CurriculoICH(props: Props) {
           className="text-center text-[10px] opacity-60 mt-8 pt-4 border-t"
           style={{ borderColor: "#ddd" }}
         >
-          <p>
-            Currículo ICH gerada por <strong>Kavuka Experts</strong> · Plataforma da GUÉP Soluções
-            Corporativas
-          </p>
-          <p className="mt-1">
-            Resultados são sinalizações, não diagnósticos clínicos. Você pode pedir revisão humana
-            (LGPD art. 20).
-          </p>
           {kyidUrl && (
-            <p className="mt-1 font-mono text-[9px] opacity-50">
+            <p className="font-mono text-[9px] opacity-50">
               KYID público: {kyidUrl}
             </p>
           )}
@@ -477,38 +501,67 @@ function Capa({
       }}
     >
       <div className="flex items-start justify-between gap-4 sm:gap-6 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] uppercase tracking-[0.3em] opacity-60 mb-2">
-            Identidade de Conhecimento e Habilidades
-          </div>
-          <h1
-            className="text-3xl sm:text-4xl font-black leading-tight mb-2 break-words"
-            style={{
-              background: "linear-gradient(90deg, #ff6a00, #ffcc00)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              color: "#ff6a00",
-            }}
-          >
-            {candidate.name}
-          </h1>
-          {narrative.headline && (
-            <p className="text-sm opacity-80 mb-4">{narrative.headline}</p>
+        <div className="flex items-start gap-4 flex-1 min-w-0">
+          {candidate.avatarUrl && (
+            <img
+              src={candidate.avatarUrl}
+              alt={candidate.name}
+              className="shrink-0"
+              style={{
+                width: 88,
+                height: 88,
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "3px solid #ff6a00",
+                background: "#fff",
+              }}
+            />
           )}
-          <div
-            className="accent-bar h-1 w-16 rounded-full mb-3"
-            style={{ background: "#ff6a00" }}
-          />
-          <div className="text-[11px] opacity-70 space-y-0.5">
-            {candidate.email && <div>{candidate.email}</div>}
-            {candidate.phone && <div>{candidate.phone}</div>}
-            {(candidate.city || candidate.state) && (
-              <div>
-                {candidate.city}
-                {candidate.state && `/${candidate.state}`}
-              </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] uppercase tracking-[0.3em] opacity-60 mb-2">
+              Índice de Conhecimento e Habilidades
+            </div>
+            <h1
+              className="text-3xl sm:text-4xl font-black leading-tight mb-2 break-words"
+              style={{
+                background: "linear-gradient(90deg, #ff6a00, #ffcc00)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                color: "#ff6a00",
+              }}
+            >
+              {candidate.name}
+            </h1>
+            {narrative.headline && (
+              <p className="text-sm opacity-80 mb-4">{narrative.headline}</p>
             )}
+            <div
+              className="accent-bar h-1 w-16 rounded-full mb-3"
+              style={{ background: "#ff6a00" }}
+            />
+            <div className="text-[11px] opacity-70 space-y-0.5">
+              {candidate.email && <div>{candidate.email}</div>}
+              {candidate.phone && <div>{candidate.phone}</div>}
+              {(candidate.city || candidate.state) && (
+                <div>
+                  {candidate.city}
+                  {candidate.state && `/${candidate.state}`}
+                </div>
+              )}
+              {candidate.linkedinUrl && (
+                <div>
+                  <a
+                    href={candidate.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#0a66c2", textDecoration: "none" }}
+                  >
+                    {candidate.linkedinUrl.replace(/^https?:\/\/(www\.)?/, "")}
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {qrUrl && kyidUrl && (
