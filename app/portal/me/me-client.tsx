@@ -1437,7 +1437,7 @@ function SkillCategoryPanel({
 
   return (
     <div
-      className="border rounded-xl"
+      className="border rounded-xl relative z-10 focus-within:z-40"
       style={{ borderColor: "var(--border)" }}
     >
       <div
