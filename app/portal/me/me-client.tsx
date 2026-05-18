@@ -1484,16 +1484,27 @@ function SkillCategoryPanel({
             />
             {showSuggestions && suggestions.length > 0 && (
               <div
-                className="absolute z-20 left-0 right-0 mt-1 border rounded-lg shadow-lg max-h-64 overflow-y-auto"
-                style={{ background: "var(--bg)", borderColor: "var(--border)" }}
+                className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-64 overflow-y-auto"
+                style={{
+                  background: "var(--card)",
+                  borderColor: accentColor,
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.5), 0 4px 10px rgba(0,0,0,0.3)",
+                }}
               >
+                <div
+                  className="px-3 py-1.5 text-[10px] uppercase tracking-wider opacity-60 border-b sticky top-0"
+                  style={{ background: "var(--card)", borderColor: "var(--border)" }}
+                >
+                  {skill.trim().length === 0 ? "Sugestões — clique para adicionar" : "Resultados"}
+                </div>
                 {suggestions.map((s) => (
                   <button
                     key={s}
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleAdd(s)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-between"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-between border-b last:border-b-0"
+                    style={{ borderColor: "var(--border)" }}
                   >
                     <span>{s}</span>
                     <span className="text-[10px] opacity-50">+ adicionar</span>
@@ -1529,28 +1540,11 @@ function SkillCategoryPanel({
           </button>
         </div>
 
-        {/* Balões/chips de sugestões rápidas (quando não digitou nada) */}
-        {skill.trim().length === 0 && (
-          <div className="pt-1">
-            <p className="text-[10px] uppercase tracking-wider opacity-50 mb-1.5">
-              Sugestões — clique para adicionar
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {catalog
-                .filter((s) => !owned.has(s.toLowerCase()))
-                .slice(0, 14)
-                .map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => handleAdd(s)}
-                    className="text-[11px] px-2.5 py-1 rounded-full border opacity-80 hover:opacity-100"
-                    style={{ borderColor: "var(--border)" }}
-                  >
-                    + {s}
-                  </button>
-                ))}
-            </div>
-          </div>
+        {/* Dica: clique no input pra ver sugestões */}
+        {skill.trim().length === 0 && !showSuggestions && (
+          <p className="text-[11px] opacity-50 italic">
+            Clique no campo acima para ver sugestões prontas.
+          </p>
         )}
 
         {/* Skills cadastradas */}
