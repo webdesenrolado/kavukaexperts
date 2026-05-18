@@ -1437,11 +1437,11 @@ function SkillCategoryPanel({
 
   return (
     <div
-      className="border rounded-xl overflow-hidden"
+      className="border rounded-xl"
       style={{ borderColor: "var(--border)" }}
     >
       <div
-        className="px-4 py-3 border-b"
+        className="px-4 py-3 border-b rounded-t-xl"
         style={{ borderColor: "var(--border)", background: `${accentColor}10` }}
       >
         <div className="flex items-baseline gap-2 flex-wrap">
