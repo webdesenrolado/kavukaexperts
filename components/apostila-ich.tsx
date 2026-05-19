@@ -479,8 +479,13 @@ export function CurriculoICH(props: Props) {
           className="text-center text-[10px] opacity-60 mt-8 pt-4 border-t"
           style={{ borderColor: "#ddd" }}
         >
+          <p className="text-[9px] opacity-50 leading-snug max-w-2xl mx-auto">
+            Instrumentos comportamentais em versões adaptadas pela GUÉP, com itens autorais.
+            Big Five / IPIP-NEO são modelos de domínio público (Goldberg, 1999).
+            Conceitos de arquétipos baseados em Carl G. Jung. Marcas mencionadas pertencem aos seus respectivos titulares.
+          </p>
           {kyidUrl && (
-            <p className="font-mono text-[9px] opacity-50">
+            <p className="mt-2 font-mono text-[9px] opacity-50">
               KYID público: {kyidUrl}
             </p>
           )}
