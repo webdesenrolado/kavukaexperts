@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { db } from "@/db";
 import { jobs, candidates, applications, assessments, companies } from "@/db/schema";
-import { sql, eq, desc } from "drizzle-orm";
+import { sql, eq, desc, and, gte } from "drizzle-orm";
 import {
   Briefcase,
   Users,
@@ -14,18 +14,155 @@ import {
   Building2,
   KanbanSquare,
   Globe,
+  UserCheck,
+  Calendar,
+  Award,
 } from "lucide-react";
 import { MapViewLoader, type MapPoint } from "@/components/map-view-loader";
 import { parseLatLng } from "@/lib/geo";
 import { JOB_STATUS_LABEL, STAGE_LABEL, SENIORITY_LABEL } from "@/lib/labels";
+import { DashboardRangeSelector, RANGE_LABEL, type Range } from "./dashboard-range-selector";
+import { DailyBarChart, type ChartPoint } from "./dashboard-chart";
 
-async function getOverview() {
+const RANGE_DAYS: Record<Range, number | null> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+  "180d": 180,
+  all: null,
+};
+
+function parseRange(value: string | undefined | null): Range {
+  if (value === "7d" || value === "30d" || value === "90d" || value === "180d" || value === "all") {
+    return value;
+  }
+  return "30d";
+}
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function rangeBounds(range: Range): { since: Date | null; days: number; bucketBy: "day" | "week" | "month" } {
+  const days = RANGE_DAYS[range];
+  if (days === null) {
+    return { since: null, days: 0, bucketBy: "month" };
+  }
+  const since = new Date();
+  since.setDate(since.getDate() - days + 1);
+  startOfDay(since);
+  return {
+    since: startOfDay(since),
+    days,
+    bucketBy: days <= 30 ? "day" : days <= 90 ? "week" : "week",
+  };
+}
+
+function buildBuckets(
+  rows: { day: string; count: number }[],
+  range: Range,
+): ChartPoint[] {
+  const { since, days, bucketBy } = rangeBounds(range);
+  if (since === null) {
+    // "all": agrupa por mês a partir do candidato mais antigo
+    if (rows.length === 0) return [];
+    const map = new Map<string, number>();
+    for (const r of rows) {
+      const d = new Date(r.day);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      map.set(key, (map.get(key) ?? 0) + Number(r.count));
+    }
+    const sorted = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+    return sorted.map(([key, value]) => {
+      const [y, m] = key.split("-");
+      const date = new Date(Number(y), Number(m) - 1, 1);
+      return {
+        label: date.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }),
+        value,
+        iso: date.toISOString(),
+      };
+    });
+  }
+
+  // Preenche com zeros pra qualquer dia/semana sem cadastro
+  const buckets: ChartPoint[] = [];
+  const today = startOfDay(new Date());
+  if (bucketBy === "day") {
+    const map = new Map<string, number>();
+    for (const r of rows) {
+      const d = startOfDay(new Date(r.day));
+      const key = d.toISOString().slice(0, 10);
+      map.set(key, (map.get(key) ?? 0) + Number(r.count));
+    }
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      buckets.push({
+        label: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+        value: map.get(key) ?? 0,
+        iso: d.toISOString(),
+      });
+    }
+  } else {
+    // semana
+    const weeks = Math.ceil(days / 7);
+    const map = new Map<string, number>();
+    for (const r of rows) {
+      const d = startOfDay(new Date(r.day));
+      // Identificador da semana = data da segunda-feira
+      const dayOfWeek = (d.getDay() + 6) % 7; // 0=segunda
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - dayOfWeek);
+      const key = monday.toISOString().slice(0, 10);
+      map.set(key, (map.get(key) ?? 0) + Number(r.count));
+    }
+    const thisMonday = new Date(today);
+    thisMonday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    for (let i = weeks - 1; i >= 0; i--) {
+      const monday = new Date(thisMonday);
+      monday.setDate(thisMonday.getDate() - i * 7);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      const key = monday.toISOString().slice(0, 10);
+      buckets.push({
+        label: `${monday.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`,
+        value: map.get(key) ?? 0,
+        iso: monday.toISOString(),
+      });
+    }
+  }
+  return buckets;
+}
+
+async function getOverview(range: Range) {
+  const { since } = rangeBounds(range);
+
+  // ====== Totais (sempre da base inteira, não filtrados pela janela) ======
   const [jobCount] = await db.select({ count: sql<number>`count(*)` }).from(jobs);
   const [openJobCount] = await db.select({ count: sql<number>`count(*)` }).from(jobs).where(sql`status = 'open'`);
   const [candidateCount] = await db.select({ count: sql<number>`count(*)` }).from(candidates);
   const [applicationCount] = await db.select({ count: sql<number>`count(*)` }).from(applications);
   const [assessCount] = await db.select({ count: sql<number>`count(*)` }).from(assessments).where(sql`status = 'completed'`);
 
+  // Perfis completos: candidato com 2+ instrumentos distintos completados
+  const completeProfilesRows = await db.execute<{ count: number }>(sql`
+    SELECT COUNT(*)::int AS count FROM (
+      SELECT candidate_id
+      FROM ${assessments}
+      WHERE status = 'completed'
+      GROUP BY candidate_id
+      HAVING COUNT(DISTINCT instrument) >= 2
+    ) sub
+  `);
+  const completeProfilesCount =
+    Array.isArray(completeProfilesRows) && completeProfilesRows.length > 0
+      ? completeProfilesRows[0].count
+      : 0;
+
+  // Score Humano médio
   const scoresRows = await db
     .select({ scoresJson: assessments.scoresJson })
     .from(assessments)
@@ -38,6 +175,47 @@ async function getOverview() {
             .map((r) => (r.scoresJson ? JSON.parse(r.scoresJson).score ?? 0 : 0))
             .reduce((a, b) => a + b, 0) / scoresRows.length,
         );
+
+  // ====== Métricas dentro da janela escolhida ======
+  const windowFilter = since ? gte(candidates.createdAt, since) : undefined;
+  const [candidatesInWindow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(candidates)
+    .where(windowFilter ?? sql`1=1`);
+
+  const [applicationsInWindow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(applications)
+    .where(since ? gte(applications.createdAt, since) : sql`1=1`);
+
+  const [assessmentsInWindow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(assessments)
+    .where(
+      since
+        ? and(eq(assessments.status, "completed"), gte(assessments.completedAt, since))!
+        : eq(assessments.status, "completed"),
+    );
+
+  // Série temporal: cadastros agregados por dia (DB faz o group)
+  const dailyResult = since
+    ? await db.execute<{ day: string; count: number }>(sql`
+        SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS day,
+               COUNT(*)::int AS count
+        FROM ${candidates}
+        WHERE created_at >= ${since.toISOString()}
+        GROUP BY day
+        ORDER BY day ASC
+      `)
+    : await db.execute<{ day: string; count: number }>(sql`
+        SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS day,
+               COUNT(*)::int AS count
+        FROM ${candidates}
+        GROUP BY day
+        ORDER BY day ASC
+      `);
+  const dailyRows = Array.isArray(dailyResult) ? (dailyResult as { day: string; count: number }[]) : [];
+  const chartData = buildBuckets(dailyRows, range);
 
   // Vagas com contagem + breakdown por stage
   const jobsList = await db
@@ -111,8 +289,15 @@ async function getOverview() {
       candidates: candidateCount.count,
       applications: applicationCount.count,
       assessments: assessCount.count,
+      completeProfiles: completeProfilesCount,
       scoreHumanoAvg,
     },
+    window: {
+      candidates: candidatesInWindow.count,
+      applications: applicationsInWindow.count,
+      assessments: assessmentsInWindow.count,
+    },
+    chartData,
     jobsList,
     stagesByJob,
     jobsForMap,
@@ -122,9 +307,17 @@ async function getOverview() {
 
 const STAGE_ORDER = ["applied", "screening", "assessment", "interview", "practical", "offer", "hired"];
 
-export default async function DashboardPage() {
-  const data = await getOverview();
-  const { stats, jobsList, stagesByJob, jobsForMap, candidatesForMap } = data;
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
+  const sp = await searchParams;
+  const range = parseRange(sp.range);
+  const data = await getOverview(range);
+  const { stats, window, chartData, jobsList, stagesByJob, jobsForMap, candidatesForMap } = data;
+  const completeShare =
+    stats.candidates > 0 ? Math.round((stats.completeProfiles / stats.candidates) * 100) : 0;
 
   const points: MapPoint[] = [];
   for (const j of jobsForMap) {
@@ -159,26 +352,107 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="p-8 max-w-7xl">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="opacity-70 mt-1">Visão geral da operação Kavuka — vagas, candidatos e inteligência humana.</p>
+        <header className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="opacity-70 mt-1">
+              Visão geral da operação Kavuka — vagas, candidatos e inteligência humana.
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[10px] uppercase tracking-wider opacity-60">Janela</span>
+            <DashboardRangeSelector current={range} />
+          </div>
         </header>
 
-        {/* STATS */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-          <Stat label="Vagas abertas" value={stats.openJobs} sub={`/ ${stats.jobs} totais`} icon={Briefcase} color="#10b981" />
-          <Stat label="Candidatos" value={stats.candidates} sub="banco de talentos" icon={Users} color="#0ea5e9" />
-          <Stat label="Aplicações" value={stats.applications} sub="vaga × candidato" icon={ArrowRight} color="#a855f7" />
-          <Stat label="Avaliações" value={stats.assessments} sub="instrumentos aplicados" icon={ClipboardList} color="#ff6a00" />
+        {/* KPIs PRINCIPAIS (totais da base inteira) */}
+        <h2 className="text-[10px] uppercase tracking-wider opacity-60 mb-2">Totais</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-5">
+          <Stat
+            label="Vagas abertas"
+            value={stats.openJobs}
+            sub={`/ ${stats.jobs} totais`}
+            icon={Briefcase}
+            color="#10b981"
+          />
+          <Stat
+            label="Candidatos"
+            value={stats.candidates}
+            sub="banco de talentos"
+            icon={Users}
+            color="#0ea5e9"
+          />
+          <Stat
+            label="Perfis completos"
+            value={stats.completeProfiles}
+            sub={`${completeShare}% da base · 2+ avaliações`}
+            icon={UserCheck}
+            color="#a855f7"
+          />
+          <Stat
+            label="Avaliações concluídas"
+            value={stats.assessments}
+            sub="instrumentos aplicados"
+            icon={ClipboardList}
+            color="#ff6a00"
+          />
           <Stat
             label="Score Humano"
             value={stats.scoreHumanoAvg ?? "—"}
             sub={stats.scoreHumanoAvg !== null ? "média da base" : "sem dados ainda"}
             icon={Sparkles}
             color="#10b981"
+          />
+        </div>
+
+        {/* KPIs DA JANELA */}
+        <h2 className="text-[10px] uppercase tracking-wider opacity-60 mb-2">
+          Nos últimos {RANGE_LABEL[range].toLowerCase()}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+          <Stat
+            label="Novos cadastros"
+            value={window.candidates}
+            sub={range === "all" ? "todos os candidatos da base" : "candidatos que entraram"}
+            icon={Calendar}
+            color="#ff6a00"
             big
           />
-          <Stat label="Insights" value="BIG" sub="ATS + analytics" icon={TrendingUp} color="#ffcc00" />
+          <Stat
+            label="Aplicações a vagas"
+            value={window.applications}
+            sub="candidaturas no período"
+            icon={ArrowRight}
+            color="#a855f7"
+            big
+          />
+          <Stat
+            label="Avaliações concluídas"
+            value={window.assessments}
+            sub="no período escolhido"
+            icon={Award}
+            color="#0ea5e9"
+            big
+          />
+        </div>
+
+        {/* GRÁFICO DE CADASTROS POR DIA */}
+        <div className="mb-8">
+          <div className="flex items-baseline justify-between mb-2 gap-3 flex-wrap">
+            <div>
+              <h2 className="text-base font-bold">Cadastros por {chartData.length > 31 || range === "all" ? (range === "all" ? "mês" : "semana") : "dia"}</h2>
+              <p className="text-[11px] opacity-60">
+                Janela: <strong>{RANGE_LABEL[range]}</strong>
+                {chartData.length > 0 && (
+                  <>
+                    {" · "}
+                    Granularidade automática conforme tamanho da janela
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+          <DailyBarChart data={chartData} color="#ff6a00" emptyMsg="Nenhum cadastro nessa janela." />
         </div>
 
         {/* VAGAS — DESTAQUE */}
