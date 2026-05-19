@@ -1,18 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-
-export type Range = "7d" | "30d" | "90d" | "180d" | "all";
-
-export const RANGE_LABEL: Record<Range, string> = {
-  "7d": "7 dias",
-  "30d": "30 dias",
-  "90d": "3 meses",
-  "180d": "6 meses",
-  all: "Todo o tempo",
-};
-
-const ORDER: Range[] = ["7d", "30d", "90d", "180d", "all"];
+import { type Range, RANGE_LABEL, RANGE_ORDER } from "./dashboard-range";
 
 export function DashboardRangeSelector({ current }: { current: Range }) {
   const router = useRouter();
@@ -32,7 +21,7 @@ export function DashboardRangeSelector({ current }: { current: Range }) {
       className="inline-flex rounded-lg border overflow-hidden"
       style={{ borderColor: "var(--border)" }}
     >
-      {ORDER.map((r) => {
+      {RANGE_ORDER.map((r) => {
         const active = r === current;
         return (
           <button

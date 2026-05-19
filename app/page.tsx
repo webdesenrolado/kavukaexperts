@@ -21,23 +21,9 @@ import {
 import { MapViewLoader, type MapPoint } from "@/components/map-view-loader";
 import { parseLatLng } from "@/lib/geo";
 import { JOB_STATUS_LABEL, STAGE_LABEL, SENIORITY_LABEL } from "@/lib/labels";
-import { DashboardRangeSelector, RANGE_LABEL, type Range } from "./dashboard-range-selector";
+import { DashboardRangeSelector } from "./dashboard-range-selector";
+import { type Range, RANGE_LABEL, RANGE_DAYS, parseRange } from "./dashboard-range";
 import { DailyBarChart, type ChartPoint } from "./dashboard-chart";
-
-const RANGE_DAYS: Record<Range, number | null> = {
-  "7d": 7,
-  "30d": 30,
-  "90d": 90,
-  "180d": 180,
-  all: null,
-};
-
-function parseRange(value: string | undefined | null): Range {
-  if (value === "7d" || value === "30d" || value === "90d" || value === "180d" || value === "all") {
-    return value;
-  }
-  return "30d";
-}
 
 function startOfDay(d: Date): Date {
   const x = new Date(d);
