@@ -7,6 +7,7 @@ import type { BehavioralIndexResult } from "@/lib/ich/behavioral-index";
 import type { ICHNarrative } from "@/lib/ich/narrative";
 import { RadarChart, type RadarAxis } from "./radar-chart";
 import { levelLabel } from "@/lib/labels";
+import { socialMeta } from "@/lib/social-links";
 
 export interface ApostilaCandidate {
   id: string;
@@ -132,14 +133,27 @@ export function CurriculoICH(props: Props) {
         @media print {
           @page { size: A4; margin: 12mm 12mm 14mm 12mm; }
           .no-print { display: none !important; }
-          .apostila { background: #fff !important; color: #000 !important; }
+          /* Força impressão de cores e backgrounds em tudo dentro do currículo */
+          .apostila, .apostila * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+          .apostila { background: #fff !important; color: #1a1a1a !important; }
           .apostila .page-break { break-before: page; }
-          .apostila section { break-inside: avoid; }
-          .apostila * { color: #000 !important; }
+          .apostila section, .apostila .break-avoid { break-inside: avoid; }
+          /* Garante que texto com gradient (h1 do nome) saia visivel no PDF */
+          .apostila h1 {
+            -webkit-text-fill-color: #ff6a00 !important;
+            color: #ff6a00 !important;
+            background: none !important;
+            background-clip: unset !important;
+            -webkit-background-clip: unset !important;
+          }
+          .apostila a { color: inherit !important; text-decoration: none !important; }
           .apostila .pill { border-color: #999 !important; background: #fff !important; }
-          .apostila .accent-bar { background: #ff6a00 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .apostila .gradient-bar { background: linear-gradient(90deg, #ff6a00, #ffcc00) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .apostila .radar-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .apostila .accent-bar { background: #ff6a00 !important; }
+          .apostila .gradient-bar { background: linear-gradient(90deg, #ff6a00, #ffcc00) !important; }
         }
         .apostila { color-scheme: light; }
       `}</style>
@@ -549,18 +563,21 @@ function Capa({
                   {candidate.state && `/${candidate.state}`}
                 </div>
               )}
-              {candidate.linkedinUrl && (
-                <div>
-                  <a
-                    href={candidate.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#0a66c2", textDecoration: "none" }}
-                  >
-                    {candidate.linkedinUrl.replace(/^https?:\/\/(www\.)?/, "")}
-                  </a>
-                </div>
-              )}
+              {candidate.linkedinUrl && (() => {
+                const meta = socialMeta(candidate.linkedinUrl);
+                return (
+                  <div>
+                    <a
+                      href={candidate.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: meta?.color ?? "#0a66c2", textDecoration: "none", fontWeight: 600 }}
+                    >
+                      {meta?.label ?? "Ver perfil no LinkedIn"} →
+                    </a>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -638,9 +655,9 @@ function DadosPessoais({
           }
         />
       )}
-      {candidate.linkedinUrl && <Field label="LinkedIn" value={candidate.linkedinUrl} mono />}
-      {candidate.githubUrl && <Field label="GitHub" value={candidate.githubUrl} mono />}
-      {candidate.portfolioUrl && <Field label="Portfolio" value={candidate.portfolioUrl} mono />}
+      {candidate.linkedinUrl && <LinkField label="LinkedIn" url={candidate.linkedinUrl} fallback="Ver perfil no LinkedIn" />}
+      {candidate.githubUrl && <LinkField label="GitHub" url={candidate.githubUrl} fallback="Ver perfil no GitHub" />}
+      {candidate.portfolioUrl && <LinkField label="Portfólio" url={candidate.portfolioUrl} fallback="Ver portfólio" />}
     </div>
   );
 }
@@ -650,6 +667,27 @@ function Field({ label, value, mono = false }: { label: string; value: string; m
     <div>
       <div className="text-[9px] uppercase tracking-wider opacity-60 mb-0.5">{label}</div>
       <div className={`${mono ? "font-mono text-[10px]" : ""}`}>{value}</div>
+    </div>
+  );
+}
+
+function LinkField({ label, url, fallback }: { label: string; url: string; fallback: string }) {
+  const meta = socialMeta(url);
+  return (
+    <div>
+      <div className="text-[9px] uppercase tracking-wider opacity-60 mb-0.5">{label}</div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] font-semibold underline-offset-2 hover:underline"
+        style={{ color: meta?.color ?? "#0a66c2" }}
+      >
+        {meta?.label ?? fallback} →
+      </a>
+      {meta?.host && (
+        <div className="text-[9px] opacity-50 mt-0.5 truncate">{meta.host}</div>
+      )}
     </div>
   );
 }

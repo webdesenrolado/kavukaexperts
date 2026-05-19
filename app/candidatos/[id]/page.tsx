@@ -39,6 +39,7 @@ import {
 import { InviteButton } from "./invite-button";
 import { MapViewLoader, type MapPoint } from "@/components/map-view-loader";
 import { distanceKm, parseLatLng } from "@/lib/geo";
+import { socialMeta } from "@/lib/social-links";
 import { InstrumentCards } from "@/components/instrument-cards";
 
 function LinkedinIcon({ size = 14, className = "" }: { size?: number; className?: string }) {
@@ -270,9 +271,10 @@ export default async function CandidatoDetailPage({ params }: { params: Promise<
                       href={candidate.linkedinUrl}
                       target="_blank"
                       rel="noopener"
-                      className="inline-flex items-center gap-1 text-[#0a66c2] hover:underline"
+                      className="inline-flex items-center gap-1 text-[#0a66c2] hover:underline font-semibold"
                     >
-                      <LinkedinIcon size={12} /> LinkedIn
+                      <LinkedinIcon size={12} />
+                      {socialMeta(candidate.linkedinUrl)?.label ?? "Ver perfil no LinkedIn"} →
                     </a>
                   )}
                 </div>
@@ -664,11 +666,11 @@ export default async function CandidatoDetailPage({ params }: { params: Promise<
                   href={candidate.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-black/5 dark:hover:bg-white/5 text-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-black/5 dark:hover:bg-white/5 text-sm font-semibold"
                   style={{ borderColor: "var(--border)" }}
                 >
                   <GithubIcon size={14} />
-                  GitHub
+                  {socialMeta(candidate.githubUrl)?.label ?? "Ver perfil no GitHub"}
                   <ExternalLink size={11} className="opacity-60" />
                 </a>
               )}
@@ -677,11 +679,11 @@ export default async function CandidatoDetailPage({ params }: { params: Promise<
                   href={candidate.portfolioUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-black/5 dark:hover:bg-white/5 text-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-black/5 dark:hover:bg-white/5 text-sm font-semibold"
                   style={{ borderColor: "var(--border)" }}
                 >
                   <Globe size={14} className="text-[#0ea5e9]" />
-                  Portfolio
+                  {socialMeta(candidate.portfolioUrl)?.label ?? "Ver portfólio"}
                   <ExternalLink size={11} className="opacity-60" />
                 </a>
               )}
