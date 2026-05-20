@@ -51,8 +51,13 @@ export async function loadApostilaData(candidateId: string) {
       .orderBy(desc(assessments.completedAt)),
   ]);
 
+  // Dedupe por instrumento: mantém a mais recente concluída.
+  // Histórico fica preservado no DB; aqui só filtramos pro ICH/índice.
+  // Se um instrumento só tem entry não-concluída, ainda aparece (1 entry).
+  const dedupedAssessments = dedupeLatestPerInstrument(assessmentList);
+
   const skillsIndex = computeSkillsIndex(skills);
-  const behavioralIndex = computeBehavioralIndex(assessmentList);
+  const behavioralIndex = computeBehavioralIndex(dedupedAssessments);
   const narrative = generateNarrative({
     name: candidate.name,
     currentRole: candidate.currentRole,
@@ -74,9 +79,47 @@ export async function loadApostilaData(candidateId: string) {
     educations,
     skills,
     languages,
-    assessments: assessmentList,
+    assessments: dedupedAssessments,
     skillsIndex,
     behavioralIndex,
     narrative,
   };
+}
+
+/**
+ * Pega N assessments do candidato (vários instrumentos, vários retries) e retorna
+ * 1 por instrumento: prefere o mais recente concluído; se nenhum concluído,
+ * cai pro mais recente em qualquer status.
+ *
+ * Espera input ordenado por completedAt DESC (Postgres pos NULLS primeiro em DESC,
+ * mas a logica abaixo nao depende disso — compara completedAt explicitamente).
+ */
+function dedupeLatestPerInstrument<T extends { instrument: string; status: string; completedAt: Date | null }>(
+  list: T[],
+): T[] {
+  const best = new Map<string, T>();
+  for (const a of list) {
+    const cur = best.get(a.instrument);
+    if (!cur) {
+      best.set(a.instrument, a);
+      continue;
+    }
+    // Concluido sempre ganha de pendente
+    const aDone = a.status === "completed";
+    const cDone = cur.status === "completed";
+    if (aDone && !cDone) {
+      best.set(a.instrument, a);
+      continue;
+    }
+    if (!aDone && cDone) continue;
+    // Mesmo status: o mais recente vence
+    const at = a.completedAt?.getTime() ?? 0;
+    const ct = cur.completedAt?.getTime() ?? 0;
+    if (at > ct) best.set(a.instrument, a);
+  }
+  return Array.from(best.values()).sort((x, y) => {
+    const xt = x.completedAt?.getTime() ?? 0;
+    const yt = y.completedAt?.getTime() ?? 0;
+    return yt - xt;
+  });
 }
