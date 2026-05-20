@@ -31,7 +31,7 @@ export async function GET() {
 const createSchema = z.object({
   kind: z.enum(["email", "whatsapp", "instagram"]),
   displayName: z.string().min(1),
-  identifier: z.string().optional(),
+  identifier: z.string().nullable().optional(),
   config: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
     kind: parsed.data.kind,
     displayName: parsed.data.displayName,
     identifier: parsed.data.identifier ?? null,
+    // ^ nullable + optional -> nulo no DB se nao passou (WhatsApp Baileys preenche apos QR)
     config: parsed.data.config ? encryptJson(parsed.data.config) : null,
     connected: true,
   });
