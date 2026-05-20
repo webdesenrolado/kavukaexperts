@@ -48,7 +48,7 @@ export const ARCHETYPE_LABEL: Record<Archetype, string> = {
   mago: "Mago",
   heroi: "Herói",
   amante: "Amante",
-  bobo: "Bobo da Corte",
+  bobo: "O Curinga",
   cuidador: "Cuidador",
   criador: "Criador",
   governante: "Governante",
