@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Inbox,
   Search,
@@ -140,6 +140,64 @@ export function InboxClient({
   const [showLinkCandModal, setShowLinkCandModal] = useState(false);
   const [showSendInviteModal, setShowSendInviteModal] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ link: string; expiresAt: string } | null>(null);
+  const [composerText, setComposerText] = useState("");
+  const [composerSubject, setComposerSubject] = useState("");
+  const [sending, setSending] = useState(false);
+
+  // Polling: a cada 30s busca novas mensagens em todos os canais conectados
+  useEffect(() => {
+    let alive = true;
+    async function tick() {
+      try {
+        const res = await fetch("/api/channels/sync", { method: "POST" });
+        if (!alive || !res.ok) return;
+        const data = (await res.json()) as { results: Array<{ fetched: number }> };
+        const total = data.results.reduce((s, r) => s + r.fetched, 0);
+        if (total > 0) router.refresh();
+      } catch {
+        // ignora
+      }
+    }
+    const id = setInterval(tick, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [router]);
+
+  // Reset do composer ao trocar de conversa
+  useEffect(() => {
+    setComposerText("");
+    setComposerSubject("");
+  }, [activeConversation?.conv.id]);
+
+  async function sendMessage() {
+    if (!activeConversation || !composerText.trim()) return;
+    setSending(true);
+    try {
+      const res = await fetch("/api/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId: activeConversation.conv.id,
+          bodyText: composerText.trim(),
+          subject: activeConversation.conv.channelKind === "email"
+            ? (composerSubject.trim() || `Re: ${activeConversation.conv.lastMessagePreview?.slice(0, 60) ?? "conversa"}`)
+            : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Falha ao enviar.");
+        return;
+      }
+      setComposerText("");
+      setComposerSubject("");
+      router.refresh();
+    } finally {
+      setSending(false);
+    }
+  }
 
   function go(updates: Record<string, string | null>) {
     const url = new URL(window.location.href);
@@ -555,22 +613,41 @@ export function InboxClient({
 
             {/* Composer */}
             <footer
-              className="border-t p-3 flex items-end gap-2"
+              className="border-t p-3 space-y-2"
               style={{ borderColor: "var(--border)", background: "var(--card)" }}
             >
-              <textarea
-                placeholder="Resposta direta no canal disponível na próxima versão · use os botões de ação acima"
-                rows={2}
-                disabled
-                className="flex-1 px-3 py-2 rounded-lg border text-xs resize-none disabled:opacity-50"
-                style={{ background: "var(--background)", borderColor: "var(--border)" }}
-              />
-              <button
-                disabled
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#ff6a00] to-[#ffcc00] text-black font-bold text-xs flex items-center gap-1 disabled:opacity-50"
-              >
-                <Send size={12} /> Enviar
-              </button>
+              {activeConversation.conv.channelKind === "email" && (
+                <input
+                  value={composerSubject}
+                  onChange={(e) => setComposerSubject(e.target.value)}
+                  placeholder={`Re: ${activeConversation.conv.lastMessagePreview?.slice(0, 60) ?? "..."}`}
+                  className="w-full px-3 py-1.5 rounded-lg border text-xs"
+                  style={{ background: "var(--background)", borderColor: "var(--border)" }}
+                />
+              )}
+              <div className="flex items-end gap-2">
+                <textarea
+                  value={composerText}
+                  onChange={(e) => setComposerText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder={`Resposta direta via ${CHANNEL_META[activeConversation.conv.channelKind ?? ""]?.name ?? "canal"} · cmd/ctrl+Enter pra enviar`}
+                  rows={2}
+                  className="flex-1 px-3 py-2 rounded-lg border text-xs resize-none"
+                  style={{ background: "var(--background)", borderColor: "var(--border)" }}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={sending || !composerText.trim()}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#ff6a00] to-[#ffcc00] text-black font-bold text-xs flex items-center gap-1 disabled:opacity-50"
+                >
+                  <Send size={12} /> {sending ? "Enviando..." : "Enviar"}
+                </button>
+              </div>
             </footer>
           </>
         )}
@@ -695,11 +772,19 @@ function ChannelButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
         active ? "bg-[#ff6a00]/10 text-[#ff6a00] font-medium" : "hover:bg-black/5 dark:hover:bg-white/5"
       }`}
     >
-      <Icon size={16} style={{ color: active ? undefined : color }} />
+      <div
+        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+        style={{
+          background: active ? "transparent" : `${color}15`,
+          color: active ? undefined : color,
+        }}
+      >
+        <Icon size={20} style={{ color: active ? undefined : color }} />
+      </div>
       <div className="flex-1 min-w-0 text-left">
         <div className="text-xs font-medium truncate flex items-center gap-1.5">
           {label}

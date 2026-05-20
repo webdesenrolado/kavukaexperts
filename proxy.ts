@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/nr1",
   "/carreiras",
   "/api/public",
+  "/api/channels/webhooks",
   "/_next",
   "/favicon.ico",
   "/icon",
