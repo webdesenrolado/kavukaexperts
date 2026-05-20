@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { channels, conversations, messages } from "@/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { getSession } from "@/lib/auth/session";
-import { encryptJson } from "@/lib/crypto";
+import { decryptJson, encryptJson } from "@/lib/crypto";
 import {
   getDriver,
   startDriverForChannel,
@@ -67,7 +67,23 @@ export async function PATCH(
   if (parsed.data.displayName !== undefined) updates.displayName = parsed.data.displayName;
   if (parsed.data.identifier !== undefined) updates.identifier = parsed.data.identifier;
   if (parsed.data.connected !== undefined) updates.connected = parsed.data.connected;
-  if (parsed.data.config) updates.config = encryptJson(parsed.data.config);
+  if (parsed.data.config) {
+    // Merge com config existente — campos omitidos (ex: senha vazia) mantem o valor atual.
+    // Strings vazias sao tratadas como "manter atual".
+    let merged: Record<string, unknown> = {};
+    if (row.config) {
+      try {
+        merged = decryptJson<Record<string, unknown>>(row.config);
+      } catch (e) {
+        console.warn(`[api/channels/PATCH] config existente nao decifravel, sobrescrevendo:`, e);
+      }
+    }
+    for (const [k, v] of Object.entries(parsed.data.config)) {
+      if (v === "" || v === null || v === undefined) continue;
+      merged[k] = v;
+    }
+    updates.config = encryptJson(merged);
+  }
 
   await db.update(channels).set(updates).where(eq(channels.id, id));
 

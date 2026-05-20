@@ -9,6 +9,7 @@ import {
   Trash2,
   RefreshCcw,
   TestTube2,
+  Pencil,
   X,
   AlertCircle,
   CheckCircle2,
@@ -55,6 +56,7 @@ export function IntegracoesClient({ initial }: { initial: ChannelRow[] }) {
   const router = useRouter();
   const [rows, setRows] = useState<ChannelDetail[]>(initial);
   const [adding, setAdding] = useState<Kind | null>(null);
+  const [editing, setEditing] = useState<ChannelRow | null>(null);
   const [details, setDetails] = useState<Record<string, ChannelDetail>>({});
 
   // Polling de estado dos canais (pra ver QR aparecer / status mudar)
@@ -83,10 +85,14 @@ export function IntegracoesClient({ initial }: { initial: ChannelRow[] }) {
   }, []);
 
   async function remove(id: string) {
-    if (!confirm("Remover este canal? As conversas existentes ficam mas param de receber novas mensagens.")) return;
+    if (!confirm("Remover este canal? Apaga tambem todas as conversas vinculadas (mensagens incluidas).")) return;
     const res = await fetch(`/api/channels/${id}`, { method: "DELETE" });
     if (res.ok) {
       setRows((cur) => cur.filter((r) => r.id !== id));
+      router.refresh();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(`Falha ao remover: ${data.error || res.statusText} (${res.status})`);
     }
   }
 
@@ -168,6 +174,7 @@ export function IntegracoesClient({ initial }: { initial: ChannelRow[] }) {
                 row={details[row.id] ?? row}
                 onTest={() => test(row.id)}
                 onSync={() => sync(row.id)}
+                onEdit={() => setEditing(row)}
                 onRemove={() => remove(row.id)}
               />
             ))}
@@ -185,6 +192,17 @@ export function IntegracoesClient({ initial }: { initial: ChannelRow[] }) {
           }}
         />
       )}
+
+      {editing && (
+        <EditModal
+          row={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -193,11 +211,13 @@ function ChannelCard({
   row,
   onTest,
   onSync,
+  onEdit,
   onRemove,
 }: {
   row: ChannelDetail;
   onTest: () => void;
   onSync: () => void;
+  onEdit: () => void;
   onRemove: () => void;
 }) {
   const meta = KIND_META[row.kind as Kind] ?? KIND_META.email;
@@ -241,6 +261,9 @@ function ChannelCard({
         </IconBtn>
         <IconBtn onClick={onSync} title="Sync agora">
           <RefreshCcw size={14} />
+        </IconBtn>
+        <IconBtn onClick={onEdit} title="Editar credenciais">
+          <Pencil size={14} />
         </IconBtn>
         <IconBtn onClick={onRemove} title="Remover canal" danger>
           <Trash2 size={14} />
@@ -385,6 +408,119 @@ function AddModal({
   );
 }
 
+// ============================================================================
+// Modal de "Editar canal" — mesmo formato do Add, mas faz PATCH e password vazia
+// significa "manter atual" (merge no servidor).
+// ============================================================================
+
+function EditModal({
+  row,
+  onClose,
+  onSaved,
+}: {
+  row: ChannelRow;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const kind = row.kind as Kind;
+  const meta = KIND_META[kind];
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<Record<string, string>>(() => ({
+    ...makeInitialForm(kind),
+    displayName: row.displayName,
+    identifier: row.identifier ?? "",
+    user: row.identifier ?? "",
+    pass: "", // sempre vazio — preenche se quiser trocar
+  }));
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const payload = buildPayload(kind, form);
+      // PATCH so manda config se algum campo significativo foi tocado.
+      // Strings vazias sao filtradas no servidor (merge).
+      const res = await fetch(`/api/channels/${row.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          displayName: payload.displayName,
+          identifier: payload.identifier,
+          config: payload.config,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || `Erro ${res.status}`);
+        return;
+      }
+      onSaved();
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.6)" }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-2xl border shadow-2xl"
+        style={{ background: "var(--card)", borderColor: "var(--border)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header
+          className="flex items-center justify-between p-5 border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center"
+              style={{ background: `${meta.color}20`, color: meta.color }}
+            >
+              <meta.icon size={18} />
+            </div>
+            <div>
+              <h2 className="font-semibold">Editar {meta.name}</h2>
+              <p className="text-[10px] opacity-60 uppercase tracking-wider">
+                Deixe a senha em branco pra manter a atual
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="opacity-60 hover:opacity-100">
+            <X size={18} />
+          </button>
+        </header>
+
+        <form onSubmit={submit} className="p-5 space-y-4">
+          {renderFields(kind, form, setForm, /* isEdit */ true)}
+
+          {error && (
+            <div className="p-3 rounded-lg bg-red-500/10 text-red-500 text-xs flex items-start gap-2">
+              <AlertCircle size={14} className="shrink-0 mt-px" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#ff6a00] to-[#ffcc00] text-black font-bold text-sm hover:opacity-90 disabled:opacity-50"
+          >
+            {loading ? "Salvando..." : "Salvar alteracoes"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function makeInitialForm(kind: Kind): Record<string, string> {
   if (kind === "email") {
     return {
@@ -455,6 +591,7 @@ function renderFields(
   kind: Kind,
   form: Record<string, string>,
   setForm: (f: Record<string, string>) => void,
+  isEdit = false,
 ) {
   const set = (k: string, v: string) => setForm({ ...form, [k]: v });
 
@@ -462,8 +599,8 @@ function renderFields(
     return (
       <>
         <Field label="Nome de exibicao" placeholder="ex: Carreiras GUEP" value={form.displayName} onChange={(v) => set("displayName", v)} />
-        <Field label="Endereco completo" placeholder="rodrigo.sasso@guep.com.br" value={form.user} onChange={(v) => set("user", v)} type="email" required />
-        <Field label="Senha / App password" placeholder="••••••••••••" value={form.pass} onChange={(v) => set("pass", v)} type="password" required />
+        <Field label="Endereco completo" placeholder="rodrigo.sasso@guep.com.br" value={form.user} onChange={(v) => set("user", v)} type="email" required={!isEdit} />
+        <Field label="Senha / App password" placeholder={isEdit ? "deixe em branco pra manter" : "••••••••••••"} value={form.pass} onChange={(v) => set("pass", v)} type="password" required={!isEdit} />
         <div className="grid grid-cols-2 gap-3">
           <Field label="IMAP host" value={form.imapHost} onChange={(v) => set("imapHost", v)} />
           <Field label="IMAP porta" value={form.imapPort} onChange={(v) => set("imapPort", v)} />

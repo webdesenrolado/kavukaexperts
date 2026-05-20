@@ -83,13 +83,13 @@ export class EmailDriver implements ChannelDriver {
       await imap.connect();
       await imap.logout();
     } catch (e: unknown) {
-      return { ok: false, detail: `IMAP: ${(e as Error).message}` };
+      return { ok: false, detail: `IMAP: ${describeError(e)}` };
     }
     try {
       const smtp = this.makeSmtp();
       await smtp.verify();
     } catch (e: unknown) {
-      return { ok: false, detail: `SMTP: ${(e as Error).message}` };
+      return { ok: false, detail: `SMTP: ${describeError(e)}` };
     }
     return { ok: true };
   }
@@ -143,7 +143,7 @@ export class EmailDriver implements ChannelDriver {
       await imap.logout();
       this.state = { ...this.state, lastSyncAt: new Date() };
     } catch (e: unknown) {
-      this.state = { ...this.state, lastError: (e as Error).message };
+      this.state = { ...this.state, lastError: describeError(e) };
       console.error(`[email/${this.channelId}] erro no pull:`, e);
     } finally {
       this.polling = false;
@@ -181,6 +181,28 @@ export class EmailDriver implements ChannelDriver {
       auth: { user: this.cfg.user, pass: this.cfg.pass },
     });
   }
+}
+
+/**
+ * Extrai detalhes uteis de erros do ImapFlow / nodemailer.
+ * ImapFlow expoe: code, response, responseText, responseStatus, authenticationFailed.
+ * Nodemailer expoe: code, response, responseCode.
+ */
+function describeError(e: unknown): string {
+  const err = e as Record<string, unknown> & { message?: string };
+  const parts: string[] = [];
+  if (err.authenticationFailed) parts.push("auth rejeitada pelo servidor");
+  if (err.code) parts.push(`code=${err.code}`);
+  if (err.responseStatus) parts.push(`status=${err.responseStatus}`);
+  if (err.responseText) {
+    parts.push(String(err.responseText).slice(0, 220));
+  } else if (err.response) {
+    parts.push(String(err.response).slice(0, 220));
+  } else if (err.message) {
+    parts.push(err.message);
+  }
+  if (parts.length === 0) parts.push("erro desconhecido");
+  return parts.join(" · ");
 }
 
 function escapeHtml(s: string): string {
