@@ -6,8 +6,17 @@
 
 import { db } from "../db";
 import { companies, channels, conversations, messages } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
+
+// IDs deterministicos dos canais demo. Idempotente: o seed so apaga estes 4
+// — canais reais que o gestor tenha adicionado via /settings/integracoes ficam intactos.
+const DEMO_CHANNEL_IDS = [
+  "ch-whatsapp-guep",
+  "ch-email-guep",
+  "ch-instagram-guep",
+  "ch-linkedin-guep",
+];
 
 async function main() {
   console.log("🌱 Seed Inbox Omnichannel");
@@ -20,18 +29,25 @@ async function main() {
     process.exit(1);
   }
 
-  // Limpa demos anteriores
-  const existingChannels = await db.select().from(channels).where(eq(channels.companyId, guep.id));
-  for (const ch of existingChannels) {
-    const convs = await db.select().from(conversations).where(eq(conversations.channelId, ch.id));
+  // Limpa SO os canais demo anteriores (mantem canais reais conectados pelo gestor).
+  const existingDemo = await db
+    .select()
+    .from(channels)
+    .where(inArray(channels.id, DEMO_CHANNEL_IDS));
+  for (const ch of existingDemo) {
+    const convs = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.channelId, ch.id));
     for (const cv of convs) {
       await db.delete(messages).where(eq(messages.conversationId, cv.id));
     }
     await db.delete(conversations).where(eq(conversations.channelId, ch.id));
   }
-  await db.delete(channels).where(eq(channels.companyId, guep.id));
+  await db.delete(channels).where(inArray(channels.id, DEMO_CHANNEL_IDS));
 
-  // 1. Canais
+  // 1. Canais — connected:false pra Baileys nao bootar QR real e IMAP nao tentar conectar.
+  // Visualmente aparecem na sidebar do inbox como qualquer canal, com icone e contagem.
   const CHANNELS = [
     { id: "ch-whatsapp-guep", kind: "whatsapp", displayName: "WhatsApp Recrutamento", identifier: "+55 11 99999-1234" },
     { id: "ch-email-guep", kind: "email", displayName: "carreiras@guep.com.br", identifier: "carreiras@guep.com.br" },
@@ -43,10 +59,10 @@ async function main() {
     await db.insert(channels).values({
       ...ch,
       companyId: guep.id,
-      connected: true,
+      connected: false,
     });
   }
-  console.log(`✓ ${CHANNELS.length} canais criados`);
+  console.log(`✓ ${CHANNELS.length} canais demo criados (connected:false — drivers nao bootam)`);
 
   // 2. Conversas + mensagens
   const now = Date.now();
