@@ -30,18 +30,37 @@ function cookieDomain(): string | undefined {
   return process.env.PORTAL_COOKIE_DOMAIN || undefined;
 }
 
+/**
+ * Atrás de reverse proxy (Nginx), `request.nextUrl` pode trazer host interno
+ * (ex: localhost:3355). Preferimos APP_BASE_URL do env e, em fallback,
+ * reconstruímos a partir de X-Forwarded-Proto/Host.
+ */
+function publicBaseUrl(request: NextRequest): URL {
+  if (process.env.APP_BASE_URL) return new URL(process.env.APP_BASE_URL);
+  const proto =
+    request.headers.get("x-forwarded-proto") ||
+    request.nextUrl.protocol.replace(":", "") ||
+    "https";
+  const host =
+    request.headers.get("x-forwarded-host") ||
+    request.headers.get("host") ||
+    request.nextUrl.host;
+  return new URL(`${proto}://${host}`);
+}
+
 export async function GET(request: NextRequest) {
   const url = request.nextUrl;
+  const base = publicBaseUrl(request);
   const token = url.searchParams.get("token");
   const redirect = safeRedirect(url.searchParams.get("redirect"));
 
   if (!token) {
-    return NextResponse.redirect(new URL("/portal/login?error=missing_token", url));
+    return NextResponse.redirect(new URL("/portal/login?error=missing_token", base));
   }
 
   const payload = await verifySsoToken(token);
   if (!payload) {
-    return NextResponse.redirect(new URL("/portal/login?error=invalid_or_expired", url));
+    return NextResponse.redirect(new URL("/portal/login?error=invalid_or_expired", base));
   }
 
   const sessionToken = await signCandidateToken({
@@ -49,7 +68,7 @@ export async function GET(request: NextRequest) {
     email: payload.email,
   });
 
-  const response = NextResponse.redirect(new URL(redirect, url));
+  const response = NextResponse.redirect(new URL(redirect, base));
   response.cookies.set(PORTAL_COOKIE, sessionToken, {
     httpOnly: true,
     secure: cookieSecure(),
