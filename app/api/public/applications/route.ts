@@ -17,6 +17,8 @@ import { eq, and } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { signCandidateToken } from "@/lib/portal/jwt";
 import { PORTAL_COOKIE, cookieSecure } from "@/lib/portal/session";
+import { signSsoToken } from "@/lib/portal/sso";
+import { applyCors, corsPreflight } from "@/lib/cors";
 
 const requestSchema = z.object({
   jobId: z.string().min(1),
@@ -36,32 +38,42 @@ const requestSchema = z.object({
   password: z.string().min(6).optional(),
 });
 
+export async function OPTIONS(request: NextRequest) {
+  return corsPreflight(request);
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Dados inválidos", issues: parsed.error.issues },
-      { status: 400 },
+    return applyCors(
+      request,
+      NextResponse.json(
+        { error: "Dados inválidos", issues: parsed.error.issues },
+        { status: 400 },
+      ),
     );
   }
 
   if (!parsed.data.consent) {
-    return NextResponse.json(
-      { error: "Você precisa aceitar os termos LGPD para se candidatar." },
-      { status: 400 },
+    return applyCors(
+      request,
+      NextResponse.json(
+        { error: "Você precisa aceitar os termos LGPD para se candidatar." },
+        { status: 400 },
+      ),
     );
   }
 
   const job = await db.query.jobs.findFirst({ where: eq(jobs.id, parsed.data.jobId) });
   if (!job) {
-    return NextResponse.json({ error: "Vaga não encontrada" }, { status: 404 });
+    return applyCors(request, NextResponse.json({ error: "Vaga não encontrada" }, { status: 404 }));
   }
   if (!job.publiclyOpen) {
-    return NextResponse.json({ error: "Vaga não está aberta para candidatura pública." }, { status: 403 });
+    return applyCors(request, NextResponse.json({ error: "Vaga não está aberta para candidatura pública." }, { status: 403 }));
   }
   if (job.status !== "open") {
-    return NextResponse.json({ error: "Vaga não está aceitando candidaturas no momento." }, { status: 403 });
+    return applyCors(request, NextResponse.json({ error: "Vaga não está aceitando candidaturas no momento." }, { status: 403 }));
   }
 
   const emailNorm = parsed.data.email.toLowerCase().trim();
@@ -165,22 +177,32 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const response = NextResponse.json(
-    {
-      ok: true,
-      applicationId,
-      candidateId,
-      alreadyApplied,
-      account: {
-        activated: accountActivated,
-        alreadyExisted: accountAlreadyExisted,
-        passwordMismatch,
+  // SSO token de handoff (TTL 5 min, uso único pela redirect)
+  // Emitido sempre — mesmo sem password — pra permitir que o candidato
+  // termine o cadastro/avaliações no portal vindo do kavukavagas.com.br.
+  const ssoToken = await signSsoToken({ candidateId, email: emailNorm });
+
+  const response = applyCors(
+    request,
+    NextResponse.json(
+      {
+        ok: true,
+        applicationId,
+        candidateId,
+        alreadyApplied,
+        ssoToken,
+        account: {
+          activated: accountActivated,
+          alreadyExisted: accountAlreadyExisted,
+          passwordMismatch,
+        },
       },
-    },
-    { status: alreadyApplied ? 200 : 201 },
+      { status: alreadyApplied ? 200 : 201 },
+    ),
   );
 
-  // Auto-login: seta cookie do portal se ativou conta
+  // Auto-login same-origin: seta cookie do portal só se conta foi ativada
+  // (cross-origin precisa do /sso pra setar cookie no domínio certo)
   if (accountActivated) {
     const token = await signCandidateToken({ candidateId, email: emailNorm });
     response.cookies.set(PORTAL_COOKIE, token, {

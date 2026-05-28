@@ -9,6 +9,7 @@ const PUBLIC_PATHS = [
   "/kyid",
   "/nr1",
   "/carreiras",
+  "/sso",
   "/api/public",
   "/api/channels/webhooks",
   "/_next",
