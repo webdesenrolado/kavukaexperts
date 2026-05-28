@@ -5,6 +5,17 @@
   --color-kavuka-accent: #ffcc00;
   --color-kavuka-ink: #0a0a0b;
   --color-kavuka-paper: #f7f7f5;
+
+  /* ===== Sistema visual kavukavagas (preto + amarelo + cinzas)
+     Usado em /portal/* pra manter continuidade com kavukavagas.com.br */
+  --color-kavuka-black: #0a0a0a;
+  --color-kavuka-yellow: #facc15;
+  --color-kavuka-yellow-soft: #fde68a;
+  --color-kavuka-gray-50: #fafafa;
+  --color-kavuka-gray-100: #f4f4f5;
+  --color-kavuka-gray-200: #e4e4e7;
+  --color-kavuka-gray-500: #71717a;
+  --color-kavuka-gray-700: #3f3f46;
 }
 
 :root {
@@ -50,12 +61,13 @@ html, body {
     background: #fff !important;
     color: #0a0a0b !important;
   }
-  /* Esconde TUDO da página exceto a folha imprimível */
-  body * {
+  /* Esconde TUDO apenas em páginas que TÊM o KYID print sheet —
+     :has() escopa a regra pro KYID e impede que ela apague o Currículo ICH. */
+  body:has(.kyid-print-sheet) * {
     visibility: hidden;
   }
-  .kyid-print-sheet,
-  .kyid-print-sheet * {
+  body:has(.kyid-print-sheet) .kyid-print-sheet,
+  body:has(.kyid-print-sheet) .kyid-print-sheet * {
     visibility: visible;
   }
   .kyid-print-sheet {

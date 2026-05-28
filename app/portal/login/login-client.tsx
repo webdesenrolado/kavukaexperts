@@ -1,6 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+
+const inputCls =
+  "w-full h-11 px-4 rounded-xl border border-kavuka-gray-200 bg-white text-sm text-kavuka-black placeholder:text-kavuka-gray-500 focus:outline-none focus:border-kavuka-black transition-colors";
 
 export function LoginClient({ redirectTo }: { redirectTo: string }) {
   const router = useRouter();
@@ -32,45 +36,47 @@ export function LoginClient({ redirectTo }: { redirectTo: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-5">
       <div>
-        <label className="text-xs uppercase tracking-wider opacity-70">Email</label>
+        <label className="block text-sm font-medium text-kavuka-black mb-2">
+          Email
+        </label>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
-          className="w-full mt-1 px-3 py-2 rounded-lg border bg-transparent"
-          style={{ borderColor: "var(--border)" }}
+          placeholder="voce@email.com"
+          className={inputCls}
         />
       </div>
       <div>
-        <label className="text-xs uppercase tracking-wider opacity-70">Senha</label>
+        <label className="block text-sm font-medium text-kavuka-black mb-2">
+          Senha
+        </label>
         <input
           type="password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
-          className="w-full mt-1 px-3 py-2 rounded-lg border bg-transparent"
-          style={{ borderColor: "var(--border)" }}
+          placeholder="Sua senha"
+          className={inputCls}
         />
       </div>
       {error && (
-        <div className="text-sm text-red-500 bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">
           {error}
         </div>
       )}
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 rounded-lg font-bold text-black disabled:opacity-50"
-        style={{
-          background: "linear-gradient(135deg, #ff6a00, #ffcc00)",
-        }}
+        className="w-full inline-flex items-center justify-center gap-2 py-3.5 rounded-full bg-kavuka-black text-kavuka-yellow font-semibold text-sm hover:bg-zinc-900 transition-colors disabled:opacity-50"
       >
         {loading ? "Entrando..." : "Entrar"}
+        {!loading && <ArrowRight size={16} />}
       </button>
     </form>
   );

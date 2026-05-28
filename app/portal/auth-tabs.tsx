@@ -5,40 +5,24 @@ interface Props {
 }
 
 export function AuthTabs({ active }: Props) {
+  const baseTab =
+    "flex-1 text-center py-2.5 rounded-full text-sm font-semibold transition-all";
+  const activeTab = "bg-kavuka-black text-kavuka-yellow";
+  const inactiveTab = "text-kavuka-gray-500 hover:text-kavuka-black";
+
   return (
-    <div
-      className="flex p-1 rounded-xl mb-6 border"
-      style={{ borderColor: "var(--border)", background: "rgba(0,0,0,0.2)" }}
-    >
+    <div className="flex p-1 rounded-full mb-8 border border-kavuka-gray-200 bg-kavuka-gray-50">
       <Link
         href="/portal/login"
-        className={`flex-1 text-center py-2 rounded-lg text-sm font-semibold transition-all ${
-          active === "login"
-            ? "text-black"
-            : "opacity-60 hover:opacity-100"
-        }`}
-        style={
-          active === "login"
-            ? { background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }
-            : undefined
-        }
+        className={`${baseTab} ${active === "login" ? activeTab : inactiveTab}`}
       >
         Entrar
       </Link>
       <Link
         href="/portal/cadastro"
-        className={`flex-1 text-center py-2 rounded-lg text-sm font-semibold transition-all ${
-          active === "cadastro"
-            ? "text-black"
-            : "opacity-60 hover:opacity-100"
-        }`}
-        style={
-          active === "cadastro"
-            ? { background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }
-            : undefined
-        }
+        className={`${baseTab} ${active === "cadastro" ? activeTab : inactiveTab}`}
       >
-        Cadastre-se grátis
+        Criar conta
       </Link>
     </div>
   );

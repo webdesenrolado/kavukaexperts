@@ -1,6 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+
+const inputCls =
+  "w-full h-11 px-4 rounded-xl border border-kavuka-gray-200 bg-white text-sm text-kavuka-black placeholder:text-kavuka-gray-500 focus:outline-none focus:border-kavuka-black transition-colors";
 
 export function CadastroClient() {
   const router = useRouter();
@@ -44,27 +48,27 @@ export function CadastroClient() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <Field label="Nome completo">
+    <form onSubmit={onSubmit} className="space-y-5">
+      <Field label="Nome completo" required>
         <input
           type="text"
           required
           value={form.name}
           onChange={(e) => set("name", e.target.value)}
           autoComplete="name"
-          className="w-full px-3 py-2 rounded-lg border bg-transparent"
-          style={{ borderColor: "var(--border)" }}
+          placeholder="Seu nome"
+          className={inputCls}
         />
       </Field>
-      <Field label="Email">
+      <Field label="Email" required>
         <input
           type="email"
           required
           value={form.email}
           onChange={(e) => set("email", e.target.value)}
           autoComplete="email"
-          className="w-full px-3 py-2 rounded-lg border bg-transparent"
-          style={{ borderColor: "var(--border)" }}
+          placeholder="voce@email.com"
+          className={inputCls}
         />
       </Field>
       <Field label="Telefone (com DDD)">
@@ -73,11 +77,11 @@ export function CadastroClient() {
           value={form.phone}
           onChange={(e) => set("phone", e.target.value)}
           autoComplete="tel"
-          className="w-full px-3 py-2 rounded-lg border bg-transparent"
-          style={{ borderColor: "var(--border)" }}
+          placeholder="(11) 90000-0000"
+          className={inputCls}
         />
       </Field>
-      <Field label="Senha (mín. 6 caracteres)">
+      <Field label="Senha" required hint="mín. 6 caracteres">
         <input
           type="password"
           required
@@ -85,44 +89,60 @@ export function CadastroClient() {
           value={form.password}
           onChange={(e) => set("password", e.target.value)}
           autoComplete="new-password"
-          className="w-full px-3 py-2 rounded-lg border bg-transparent"
-          style={{ borderColor: "var(--border)" }}
+          placeholder="Crie uma senha"
+          className={inputCls}
         />
       </Field>
-      <label className="flex items-start gap-2 text-xs cursor-pointer">
+      <label className="flex items-start gap-3 text-sm text-kavuka-gray-700 cursor-pointer">
         <input
           type="checkbox"
           required
           checked={form.consentLgpd}
           onChange={(e) => set("consentLgpd", e.target.checked)}
-          className="mt-0.5"
+          className="mt-1 w-4 h-4 accent-kavuka-black"
         />
-        <span className="opacity-80">
-          Li e concordo com os termos de consentimento para tratamento dos meus dados pessoais conforme
-          a LGPD. Posso revogar este consentimento a qualquer momento.
+        <span>
+          Li e concordo com os termos de tratamento dos meus dados pela
+          Kavuka, conforme a LGPD.
         </span>
       </label>
       {error && (
-        <div className="text-sm text-red-500 bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">
           {error}
         </div>
       )}
       <button
         type="submit"
-        disabled={loading}
-        className="w-full py-2.5 rounded-lg font-bold text-black disabled:opacity-50"
-        style={{ background: "linear-gradient(135deg, #ff6a00, #ffcc00)" }}
+        disabled={loading || !form.consentLgpd}
+        className="w-full inline-flex items-center justify-center gap-2 py-3.5 rounded-full bg-kavuka-black text-kavuka-yellow font-semibold text-sm hover:bg-zinc-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Criando conta..." : "Criar conta"}
+        {!loading && <ArrowRight size={16} />}
       </button>
     </form>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  hint,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <label className="text-xs uppercase tracking-wider opacity-70 block mb-1">{label}</label>
+      <div className="flex items-baseline justify-between mb-2">
+        <label className="block text-sm font-medium text-kavuka-black">
+          {label}
+          {required && <span className="text-kavuka-yellow ml-1">*</span>}
+        </label>
+        {hint && <span className="text-xs text-kavuka-gray-500">{hint}</span>}
+      </div>
       {children}
     </div>
   );

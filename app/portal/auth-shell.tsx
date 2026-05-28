@@ -1,33 +1,21 @@
 /**
- * Shell visual das páginas de autenticação do portal do candidato.
- * Reusa o background de rostos do login do recrutador, com opacidade maior
- * pra ficar mais presente.
+ * Shell visual das páginas de auth do portal — paleta kavukavagas
+ * (branco/preto/amarelo) com pattern de pontos sutil e blobs amarelos.
  */
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-[calc(100vh-64px)] overflow-hidden">
-      {/* Fundo de rostos */}
+    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-kavuka-gray-50">
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 opacity-[0.04] pointer-events-none"
         style={{
-          backgroundImage: "url(/brand/login-bg.jpg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          opacity: 0.45,
-          filter: "saturate(0.9)",
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, var(--color-kavuka-black) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
         }}
       />
-      {/* Overlay com gradiente Kavuka pra manter contraste do card */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at top, rgba(255,106,0,0.18), transparent 60%), radial-gradient(ellipse at bottom, rgba(255,204,0,0.10), transparent 60%), linear-gradient(180deg, rgba(10,10,11,0.55), rgba(10,10,11,0.80))",
-        }}
-      />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-kavuka-yellow rounded-full blur-3xl opacity-20 pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-kavuka-yellow rounded-full blur-3xl opacity-10 pointer-events-none" />
 
       <div className="relative z-10">{children}</div>
     </div>

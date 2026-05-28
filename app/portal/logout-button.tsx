@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LogOut } from "lucide-react";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -15,9 +16,9 @@ export function LogoutButton() {
         router.refresh();
       }}
       disabled={loading}
-      className="text-xs px-3 py-1.5 rounded-md border hover:bg-white/5 disabled:opacity-50"
-      style={{ borderColor: "var(--border)" }}
+      className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-kavuka-gray-200 text-kavuka-gray-700 hover:border-kavuka-black hover:text-kavuka-black transition-colors disabled:opacity-50"
     >
+      <LogOut size={14} />
       {loading ? "Saindo..." : "Sair"}
     </button>
   );
