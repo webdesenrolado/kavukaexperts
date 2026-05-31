@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil, X as XIcon, Check, Lightbulb, Link as LinkIcon } from "lucide-react";
 import { Select } from "@/components/select";
 import { AvatarUploader } from "./avatar-uploader";
 import { PortalTour } from "./portal-tour";
@@ -117,29 +118,29 @@ interface LinkPreset {
 
 const LINK_PRESETS: LinkPreset[] = [
   // Essencial
-  { kind: "portfolio", label: "Portfolio / Site pessoal", placeholder: "https://seusite.com", group: "essencial", icon: "🌐" },
-  { kind: "website", label: "Site / Blog", placeholder: "https://...", group: "essencial", icon: "🔗" },
+  { kind: "portfolio", label: "Portfolio / Site pessoal", placeholder: "https://seusite.com", group: "essencial", icon: "PT" },
+  { kind: "website", label: "Site / Blog", placeholder: "https://...", group: "essencial", icon: "WS" },
   // Dev
-  { kind: "github", label: "GitHub", placeholder: "https://github.com/usuario", group: "dev", icon: "💻" },
-  { kind: "stackoverflow", label: "Stack Overflow", placeholder: "https://stackoverflow.com/users/...", group: "dev", icon: "📚" },
-  { kind: "kaggle", label: "Kaggle", placeholder: "https://kaggle.com/usuario", group: "dev", icon: "📊" },
-  { kind: "huggingface", label: "Hugging Face", placeholder: "https://huggingface.co/usuario", group: "dev", icon: "🤗" },
+  { kind: "github", label: "GitHub", placeholder: "https://github.com/usuario", group: "dev", icon: "GH" },
+  { kind: "stackoverflow", label: "Stack Overflow", placeholder: "https://stackoverflow.com/users/...", group: "dev", icon: "SO" },
+  { kind: "kaggle", label: "Kaggle", placeholder: "https://kaggle.com/usuario", group: "dev", icon: "KG" },
+  { kind: "huggingface", label: "Hugging Face", placeholder: "https://huggingface.co/usuario", group: "dev", icon: "HF" },
   // Design
-  { kind: "behance", label: "Behance", placeholder: "https://behance.net/usuario", group: "design", icon: "🎨" },
-  { kind: "dribbble", label: "Dribbble", placeholder: "https://dribbble.com/usuario", group: "design", icon: "🏀" },
-  { kind: "figma", label: "Figma", placeholder: "https://figma.com/@usuario", group: "design", icon: "🟪" },
-  { kind: "artstation", label: "ArtStation", placeholder: "https://artstation.com/usuario", group: "design", icon: "🖼️" },
+  { kind: "behance", label: "Behance", placeholder: "https://behance.net/usuario", group: "design", icon: "BE" },
+  { kind: "dribbble", label: "Dribbble", placeholder: "https://dribbble.com/usuario", group: "design", icon: "DR" },
+  { kind: "figma", label: "Figma", placeholder: "https://figma.com/@usuario", group: "design", icon: "FG" },
+  { kind: "artstation", label: "ArtStation", placeholder: "https://artstation.com/usuario", group: "design", icon: "AS" },
   // Conteúdo
-  { kind: "instagram", label: "Instagram", placeholder: "https://instagram.com/usuario", group: "conteudo", icon: "📷" },
-  { kind: "twitter", label: "X / Twitter", placeholder: "https://x.com/usuario", group: "conteudo", icon: "𝕏" },
-  { kind: "youtube", label: "YouTube", placeholder: "https://youtube.com/@canal", group: "conteudo", icon: "▶️" },
-  { kind: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@usuario", group: "conteudo", icon: "🎵" },
-  { kind: "medium", label: "Medium", placeholder: "https://medium.com/@usuario", group: "conteudo", icon: "📝" },
-  { kind: "twitch", label: "Twitch", placeholder: "https://twitch.tv/usuario", group: "conteudo", icon: "🎮" },
-  { kind: "vimeo", label: "Vimeo", placeholder: "https://vimeo.com/usuario", group: "conteudo", icon: "🎬" },
+  { kind: "instagram", label: "Instagram", placeholder: "https://instagram.com/usuario", group: "conteudo", icon: "IG" },
+  { kind: "twitter", label: "X / Twitter", placeholder: "https://x.com/usuario", group: "conteudo", icon: "X" },
+  { kind: "youtube", label: "YouTube", placeholder: "https://youtube.com/@canal", group: "conteudo", icon: "YT" },
+  { kind: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@usuario", group: "conteudo", icon: "TT" },
+  { kind: "medium", label: "Medium", placeholder: "https://medium.com/@usuario", group: "conteudo", icon: "MD" },
+  { kind: "twitch", label: "Twitch", placeholder: "https://twitch.tv/usuario", group: "conteudo", icon: "TV" },
+  { kind: "vimeo", label: "Vimeo", placeholder: "https://vimeo.com/usuario", group: "conteudo", icon: "VM" },
   // Música
-  { kind: "spotify", label: "Spotify", placeholder: "https://open.spotify.com/artist/...", group: "musica", icon: "🎧" },
-  { kind: "soundcloud", label: "SoundCloud", placeholder: "https://soundcloud.com/usuario", group: "musica", icon: "🔊" },
+  { kind: "spotify", label: "Spotify", placeholder: "https://open.spotify.com/artist/...", group: "musica", icon: "SP" },
+  { kind: "soundcloud", label: "SoundCloud", placeholder: "https://soundcloud.com/usuario", group: "musica", icon: "SC" },
 ];
 
 const PRESET_BY_KIND: Record<string, LinkPreset> = Object.fromEntries(
@@ -216,7 +217,7 @@ export function MeClient(props: {
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold leading-tight">
-              Olá, {candidate.name?.split(" ")[0]} 👋
+              Olá, {candidate.name?.split(" ")[0]}
             </h1>
             <p className="text-xs sm:text-sm opacity-80 mt-1 leading-snug">
               Quanto mais completo seu perfil, mais relevante você fica para vagas alinhadas ao seu objetivo.
@@ -228,7 +229,7 @@ export function MeClient(props: {
             <span className="opacity-70">Currículo {completeness}% completo</span>
             <span className="opacity-50 hidden sm:inline">{completeness < 70 ? "continue preenchendo" : "ótimo perfil!"}</span>
           </div>
-          <div className="h-2 rounded-full bg-black/20 dark:bg-white/10 overflow-hidden">
+          <div className="h-2 rounded-full bg-kavuka-gray-100 overflow-hidden">
             <div
               className="h-full transition-all"
               style={{
@@ -241,10 +242,10 @@ export function MeClient(props: {
         <a
           href="/portal/me/apostila"
           data-tour="curriculo-ich"
-          className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+          className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg border text-sm font-semibold hover:bg-kavuka-gray-50"
           style={{ borderColor: "var(--border)" }}
         >
-          📄 Ver meu Currículo ICH
+          Ver meu Currículo ICH
         </a>
       </div>
 
@@ -260,7 +261,7 @@ export function MeClient(props: {
             onClick={() => setTab(t.key)}
             data-tour={t.key === "avaliacoes" ? "avaliacoes-tab" : undefined}
             className={`px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-              tab === t.key ? "border-[#ff6a00]" : "border-transparent opacity-60 hover:opacity-100"
+              tab === t.key ? "border-kavuka-black" : "border-transparent opacity-60 hover:opacity-100"
             }`}
           >
             {t.label}
@@ -384,7 +385,7 @@ function AssessmentCompletedModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+            className="flex-1 px-4 py-2.5 rounded-lg border text-sm font-semibold hover:bg-kavuka-gray-50"
             style={{ borderColor: "var(--border)" }}
           >
             Continuar no portal
@@ -469,7 +470,7 @@ function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
             <p className="text-sm opacity-80 leading-relaxed">
               Cada instrumento mede uma dimensão diferente de quem você é. Combinados,
               eles geram seu <strong>Índice Comportamental</strong> e alimentam sua{" "}
-              <strong className="text-[#ff6a00]">Currículo ICH</strong> com profundidade
+              <strong className="text-kavuka-black">Currículo ICH</strong> com profundidade
               real. Você pode refazer a qualquer momento.
             </p>
           </div>
@@ -482,7 +483,7 @@ function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
             </div>
           </div>
         </div>
-        <div className="mt-4 h-1.5 rounded-full bg-black/20 dark:bg-white/10 overflow-hidden">
+        <div className="mt-4 h-1.5 rounded-full bg-kavuka-gray-100 overflow-hidden">
           <div
             className="h-full transition-all"
             style={{
@@ -519,7 +520,7 @@ function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
                     className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold shrink-0 text-white"
                     style={{ background: i.color }}
                   >
-                    ✓ feito
+                    feito
                   </span>
                 )}
               </div>
@@ -545,7 +546,7 @@ function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
         })}
       </div>
 
-      {/* CTA pra apostila */}
+      {/* CTA pro Currículo ICH */}
       <div
         className="rounded-xl border p-4 flex items-center justify-between gap-3 flex-wrap"
         style={{ borderColor: "var(--border)", background: "var(--card)" }}
@@ -554,16 +555,16 @@ function AvaliacoesTab({ assessments }: { assessments: AssessmentSummary[] }) {
           <div className="font-semibold text-sm">Seu Currículo ICH</div>
           <div className="text-xs opacity-70 mt-0.5">
             {done === 0
-              ? "Faça pelo menos 1 avaliação pra começar a alimentar sua KYID."
-              : `Já temos ${done} avaliação${done === 1 ? "" : "es"} integrada${done === 1 ? "" : "s"} na sua Apostila.`}
+              ? "Faça pelo menos 1 avaliação pra começar a alimentar seu KYID."
+              : `Já temos ${done} avaliação${done === 1 ? "" : "es"} integrada${done === 1 ? "" : "s"} no seu Currículo ICH.`}
           </div>
         </div>
         <a
           href="/portal/me/apostila"
-          className="px-4 py-2 rounded-lg border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5"
+          className="px-4 py-2 rounded-lg border text-sm font-semibold hover:bg-kavuka-gray-50"
           style={{ borderColor: "var(--border)" }}
         >
-          📄 Abrir minha Apostila
+          Abrir meu Currículo ICH
         </a>
       </div>
     </div>
@@ -756,7 +757,6 @@ function PerfilTab({
         >
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-lg">💼</span>
               <span className="font-bold text-sm">LinkedIn</span>
               <span
                 className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -765,7 +765,7 @@ function PerfilTab({
                 Recomendado
               </span>
             </div>
-            {form.linkedinUrl && <span className="text-xs text-[#10b981]">✓ preenchido</span>}
+            {form.linkedinUrl && <span className="text-xs text-[#10b981]">preenchido</span>}
           </div>
           <p className="text-xs opacity-70 mb-2 leading-snug">
             É o link mais consultado por recrutadores. Mesmo que você não use ativamente,
@@ -1030,8 +1030,8 @@ function ExperienceTab({
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <IconButton onClick={() => setEditing(x)} title="Editar">✎</IconButton>
-            <IconButton onClick={() => remove(x.id)} title="Remover">×</IconButton>
+            <IconButton onClick={() => setEditing(x)} title="Editar"><Pencil size={14} /></IconButton>
+            <IconButton onClick={() => remove(x.id)} title="Remover"><XIcon size={14} /></IconButton>
           </div>
         </div>
       ))}
@@ -1226,8 +1226,8 @@ function EducationTab({
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <IconButton onClick={() => setEditing(e)} title="Editar">✎</IconButton>
-            <IconButton onClick={() => remove(e.id)} title="Remover">×</IconButton>
+            <IconButton onClick={() => setEditing(e)} title="Editar"><Pencil size={14} /></IconButton>
+            <IconButton onClick={() => remove(e.id)} title="Remover"><XIcon size={14} /></IconButton>
           </div>
         </div>
       ))}
@@ -1503,7 +1503,7 @@ function SkillCategoryPanel({
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleAdd(s)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-between border-b last:border-b-0"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-kavuka-gray-100 flex items-center justify-between border-b last:border-b-0"
                     style={{ borderColor: "var(--border)" }}
                   >
                     <span>{s}</span>
@@ -1568,7 +1568,7 @@ function SkillCategoryPanel({
                 )}
                 <button
                   onClick={() => onRemove(s.id)}
-                  className="ml-0.5 w-5 h-5 rounded-full bg-black/10 dark:bg-white/10 hover:bg-red-500/20 hover:text-red-500 flex items-center justify-center text-[10px]"
+                  className="ml-0.5 w-5 h-5 rounded-full bg-kavuka-gray-100 hover:bg-red-500/20 hover:text-red-500 flex items-center justify-center text-[10px]"
                   title="Remover"
                 >
                   ×
@@ -1666,7 +1666,7 @@ function LanguagesTab({ items, setItems }: { items: Language[]; setItems: (i: La
               </div>
               <button
                 onClick={() => remove(l.id)}
-                className="w-6 h-6 rounded-full bg-black/10 dark:bg-white/10 hover:bg-red-500/20 hover:text-red-500 flex items-center justify-center text-xs"
+                className="w-6 h-6 rounded-full bg-kavuka-gray-100 hover:bg-red-500/20 hover:text-red-500 flex items-center justify-center text-xs"
                 title="Remover"
               >
                 ×
@@ -1721,8 +1721,9 @@ function LinksManager({
             background: "linear-gradient(135deg, rgba(168,85,247,0.08), rgba(236,72,153,0.04))",
           }}
         >
-          <div className="font-semibold mb-1">
-            💡 Pra {suggestion === "dev" ? "desenvolvedor" : suggestion === "design" ? "designer" : suggestion === "conteudo" ? "criador de conteúdo" : "músico"}: links que pesam
+          <div className="font-semibold mb-1 flex items-center gap-2">
+            <Lightbulb size={14} className="text-[#a855f7]" />
+            Pra {suggestion === "dev" ? "desenvolvedor" : suggestion === "design" ? "designer" : suggestion === "conteudo" ? "criador de conteúdo" : "músico"}: links que pesam
           </div>
           <div className="flex flex-wrap gap-1.5">
             {LINK_PRESETS.filter((p) => p.group === suggestion).map((p) => (
@@ -1749,7 +1750,7 @@ function LinksManager({
                 className="border rounded-lg px-3 py-2 flex items-center gap-3"
                 style={{ borderColor: "var(--border)", background: "var(--card)" }}
               >
-                <span className="text-lg shrink-0">{preset?.icon || "🔗"}</span>
+                <span className="text-[10px] font-bold tracking-wider shrink-0 w-8 text-center opacity-70">{preset?.icon || "LK"}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold">
                     {l.label || preset?.label || l.kind}
@@ -1781,7 +1782,7 @@ function LinksManager({
       <button
         type="button"
         onClick={() => setShowAdd(true)}
-        className="w-full py-2.5 rounded-lg border border-dashed text-sm flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5"
+        className="w-full py-2.5 rounded-lg border border-dashed text-sm flex items-center justify-center gap-2 hover:bg-kavuka-gray-50"
         style={{ borderColor: "var(--border)" }}
       >
         + Adicionar link (portfolio, GitHub, Behance, Instagram, X, YouTube…)
@@ -1830,7 +1831,7 @@ function AddLinkModal({
       label: "",
       placeholder: "https://...",
       group: "outro",
-      icon: "🔗",
+      icon: "LK",
     });
     setStep("url");
     setUrl("");
@@ -1900,15 +1901,15 @@ function AddLinkModal({
                       key={p.kind}
                       type="button"
                       onClick={() => choose(p)}
-                      className="text-left px-3 py-2 rounded-lg border text-xs flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/5"
+                      className="text-left px-3 py-2 rounded-lg border text-xs flex items-center gap-2 hover:bg-kavuka-gray-50"
                       style={{
                         borderColor: used ? "rgba(16,185,129,0.4)" : "var(--border)",
                         background: used ? "rgba(16,185,129,0.06)" : "transparent",
                       }}
                     >
-                      <span className="text-base">{p.icon}</span>
+                      <span className="text-[10px] font-bold tracking-wider w-7 text-center opacity-70">{p.icon}</span>
                       <span className="flex-1 truncate">{p.label}</span>
-                      {used && <span className="text-[9px] text-[#10b981]">✓</span>}
+                      {used && <Check size={10} className="text-[#10b981]" />}
                     </button>
                   );
                 })}
@@ -1922,10 +1923,10 @@ function AddLinkModal({
             <button
               type="button"
               onClick={chooseCustom}
-              className="w-full text-left px-3 py-2 rounded-lg border border-dashed text-xs flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/5"
+              className="w-full text-left px-3 py-2 rounded-lg border border-dashed text-xs flex items-center gap-2 hover:bg-kavuka-gray-50"
               style={{ borderColor: "var(--border)" }}
             >
-              <span className="text-base">🔗</span>
+              <LinkIcon size={14} className="opacity-70" />
               <span>Outro link customizado</span>
             </button>
           </div>
@@ -1940,7 +1941,7 @@ function AddLinkModal({
             ← Voltar
           </button>
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-xl">{preset?.icon}</span>
+            <span className="text-[10px] font-bold tracking-wider w-7 text-center opacity-70">{preset?.icon}</span>
             <strong>{preset?.kind === "custom" ? "Link customizado" : preset?.label}</strong>
           </div>
           {preset?.kind === "custom" && (
@@ -2094,7 +2095,7 @@ function IconButton({
     <button
       onClick={onClick}
       title={title}
-      className="w-8 h-8 rounded-md hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center text-base opacity-70 hover:opacity-100"
+      className="w-8 h-8 rounded-md hover:bg-kavuka-gray-50 flex items-center justify-center text-base opacity-70 hover:opacity-100"
     >
       {children}
     </button>
