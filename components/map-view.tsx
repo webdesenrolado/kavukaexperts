@@ -58,14 +58,18 @@ export function MapView({ points, height = 360, drawLinesFromKind, className }: 
   const anchor = drawLinesFromKind ? points.find((p) => p.kind === drawLinesFromKind) : null;
   const lineTargets = anchor ? points.filter((p) => p.id !== anchor.id) : [];
 
+  // Com âncora (ex.: empresa na página da vaga), o mapa abre centrado nela;
+  // sem âncora, enquadra todos os pontos
+  const mapCenter: [number, number] = anchor ? [anchor.lat, anchor.lng] : center;
+
   return (
     <div
       className={`rounded-xl overflow-hidden border ${className ?? ""}`}
       style={{ height, borderColor: "var(--border)" }}
     >
       <MapContainer
-        center={center}
-        bounds={bounds}
+        center={mapCenter}
+        bounds={anchor ? undefined : bounds}
         zoom={11}
         scrollWheelZoom={false}
         style={{ height: "100%", width: "100%", background: "#0a0a0b" }}
